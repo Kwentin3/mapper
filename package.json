@@ -1,11 +1,10 @@
 {
-  "name": "architecture-mapper",
-  "version": "0.0.0-experimental",
-  "private": true,
+  "name": "project-architecture-mapper",
+  "version": "0.8.2",
   "description": "Project Architecture Mapper CLI tool",
   "main": "dist/cli/index.js",
   "bin": {
-    "architecture-mapper": "dist/cli/main.js"
+    "project-architecture-mapper": "dist/cli/main.js"
   },
   "files": ["dist", "README.md", "CHANGELOG.md"],
   "scripts": {

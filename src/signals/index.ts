@@ -1,0 +1,8 @@
+/**
+ * Signals module – deterministic signal detection and budgeting.
+ */
+
+export * from './types.js';
+export * from './rank.js';
+export * from './compute_signals.js';
+export * from './filter.js';

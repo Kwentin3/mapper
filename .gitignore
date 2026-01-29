@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# Build artifacts
+dist/
+
+# CLI-generated outputs / audits
+out/
+artifacts/cli-evidence/
+
+# Temp and test artifacts
+tmp/
+tmp2/
+test/temp_*
+tmp_*.md
+
+# Pack files
+project-architecture-mapper-*.tgz

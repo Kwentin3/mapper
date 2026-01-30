@@ -5,6 +5,8 @@
 
 Quick start
 -----------
+Канонический путь: сначала установить пакет, затем использовать `npx mapper ...`.
+
 Установить пакет и проверить справку:
 
 ```powershell
@@ -20,13 +22,13 @@ npx mapper .
 
 Windows notes
 -------------
-На Windows `npx @kwentin3/mapper --help` может быть нестабилен из-за особенностей npx/spawn.
-Надёжный путь: установить пакет и запускать через `npx mapper ...`.
+`npx @kwentin3/mapper --help` на Windows может быть нестабилен из-за особенностей npx/spawn.
+Рекомендуемый путь: установить пакет и запускать через `npx mapper ...`.
 
 Альтернатива (явный бин):
 
 ```powershell
-\.\node_modules\.bin\mapper.cmd --help
+.\node_modules\.bin\mapper.cmd --help
 ```
 
 Usage
@@ -54,7 +56,7 @@ Troubleshooting
 Если видите ошибку `'mapper' is not recognized`:
 
 - Убедитесь, что пакет установлен: `npm install @kwentin3/mapper`.
-- Запускайте через `npx mapper ...` или `\.\node_modules\.bin\mapper.cmd ...`.
+- Запускайте через `npx mapper ...` или `.\node_modules\.bin\mapper.cmd ...`.
 
 Кратко
 -------

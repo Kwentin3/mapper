@@ -1,6 +1,61 @@
 <!-- README for Project Architecture Mapper - concise, engineering tone, Russian -->
 # Project Architecture Mapper
 
+Коротко: CLI для детерминированного построения архитектурной карты репозитория (ARCHITECTURE.md).
+
+Quick start
+-----------
+Установить пакет и проверить справку:
+
+```powershell
+npm install @kwentin3/mapper
+npx mapper --help
+```
+
+Первый запуск (генерация ARCHITECTURE.md для текущей папки):
+
+```powershell
+npx mapper .
+```
+
+Windows notes
+-------------
+На Windows `npx @kwentin3/mapper --help` может быть нестабилен из-за особенностей npx/spawn.
+Надёжный путь: установить пакет и запускать через `npx mapper ...`.
+
+Альтернатива (явный бин):
+
+```powershell
+\.\node_modules\.bin\mapper.cmd --help
+```
+
+Usage
+-----
+Справка:
+
+```powershell
+npx mapper --help
+```
+
+Базовый запуск (сканировать текущую папку):
+
+```powershell
+npx mapper .
+```
+
+Точечный анализ файла (если нужен deep‑dive):
+
+```powershell
+npx mapper --focus-file src/app/main.ts .
+```
+
+Troubleshooting
+---------------
+Если видите ошибку `'mapper' is not recognized`:
+
+- Убедитесь, что пакет установлен: `npm install @kwentin3/mapper`.
+- Запускайте через `npx mapper ...` или `\.\node_modules\.bin\mapper.cmd ...`.
+
 Кратко
 -------
 Project Architecture Mapper — инструмент командной строки для статического анализа кода, который строит детерминированную архитектурную карту проекта и выводит её в формате Markdown (`ARCHITECTURE.md`). Цель — помочь разработчикам, архитекторам и автоматическим кодовым агентам безопасно ориентироваться в больших кодовых базах и принимать обоснованные решения по рефакторингу.
@@ -28,8 +83,8 @@ Project Architecture Mapper — инструмент командной стро
 - Это не полная замена type‑checker'а (TypeScript, Flow и т.п.).
 - Это не инструмент для принудительного применения best‑practices — сигналы производные и не навязывают изменений.
 
-Быстрый старт
--------------
+Быстрый старт (локальная сборка)
+-------------------------------
 В каталоге проекта соберите и запустите CLI (Node >= 18, TypeScript dev environment):
 
 Примеры (PowerShell):
@@ -74,7 +129,7 @@ node dist/cli/main.js --full-signals .
 
 Роли и ответственность
 ---------------------
-- Источник истины для синтаксиса и списка флагов: вызов CLI с `--help` (например `node dist/cli/main.js --help` или установленный бин `pam --help`). README предоставляет контекст и правила интерпретации вывода; он не заменяет `--help` как машинный контракт.
+- Источник истины для синтаксиса и списка флагов: вызов CLI с `--help` (например `node dist/cli/main.js --help` или установленный бин `mapper --help`). README предоставляет контекст и правила интерпретации вывода; он не заменяет `--help` как машинный контракт.
 
 Основные сигналы (коротко)
 -------------------------

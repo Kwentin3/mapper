@@ -1,12 +1,12 @@
 {
-  "name": "project-architecture-mapper",
-  "version": "0.8.2",
+  "name": "@kwentin3/mapper",
+  "version": "0.1.0",
   "description": "Project Architecture Mapper CLI tool",
   "main": "dist/cli/index.js",
   "bin": {
-    "project-architecture-mapper": "dist/cli/main.js"
+    "mapper": "dist/cli/main.js"
   },
-  "files": ["dist", "README.md", "CHANGELOG.md"],
+  "files": ["dist", "README.md", "package.json"],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

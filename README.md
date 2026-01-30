@@ -6,6 +6,7 @@
 Quick start
 -----------
 Канонический путь: сначала установить пакет, затем использовать `npx mapper ...`.
+Глобально TypeScript не нужен — он требуется только для разработки/сборки.
 
 Установить пакет и проверить справку:
 
@@ -24,11 +25,24 @@ Windows notes
 -------------
 `npx @kwentin3/mapper --help` на Windows может быть нестабилен из-за особенностей npx/spawn.
 Рекомендуемый путь: установить пакет и запускать через `npx mapper ...`.
+Запускайте из корня проекта.
 
 Альтернатива (явный бин):
 
 ```powershell
 .\node_modules\.bin\mapper.cmd --help
+```
+
+PowerShell:
+
+```powershell
+npx mapper --help
+```
+
+Bash:
+
+```bash
+npx mapper --help
 ```
 
 Usage
@@ -56,6 +70,7 @@ Troubleshooting
 Если видите ошибку `'mapper' is not recognized`:
 
 - Убедитесь, что пакет установлен: `npm install @kwentin3/mapper`.
+- Основная команда: `npx mapper --help`.
 - Запускайте через `npx mapper ...` или `.\node_modules\.bin\mapper.cmd ...`.
 
 Кратко

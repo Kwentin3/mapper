@@ -34,6 +34,11 @@ export function buildDependencyGraph(input: BuildGraphInput): DependencyGraph {
         }
 
         for (const edge of parseResult.edges) {
+            // Type-only imports/exports are a compile-time concern and should not
+            // contribute to the runtime dependency graph (and hub metrics).
+            if (edge.isTypeOnly) {
+                continue;
+            }
             const resolved = resolve(from, edge.specifier);
             switch (resolved.kind) {
                 case 'internal': {

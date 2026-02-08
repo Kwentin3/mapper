@@ -4,7 +4,7 @@
 
 import { stableSort, stableStringCompare } from '../utils/determinism.js';
 import type { SummaryItem } from './types.js';
-import { ENTRYPRIORITY_PATTERNS, ENTRYPRIORITY_EXCLUDE_PATTERNS } from './types.js';
+import { ENTRYPRIORITY_PATTERNS, ENTRYPRIORITY_EXCLUDE_PATTERNS } from './policies.js';
 
 /**
  * Convert a glob pattern to a RegExp.

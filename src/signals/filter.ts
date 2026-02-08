@@ -3,7 +3,7 @@
  */
 
 import type { FileSignals, Signal } from './types.js';
-import { ORPHAN_FILTER_PATTERNS } from './types.js';
+import { ORPHAN_FILTER_PATTERNS } from './policies.js';
 
 /**
  * Convert a glob pattern to a RegExp.

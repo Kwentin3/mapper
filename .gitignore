@@ -13,6 +13,8 @@ tmp/
 tmp2/
 test/temp_*
 tmp_*.md
+.tmp_cli_help.txt
+рефлексия*.txt
 
 # Pack files
 project-architecture-mapper-*.tgz

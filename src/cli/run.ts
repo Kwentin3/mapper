@@ -197,7 +197,7 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
 
 function printHelp() {
     console.log(`
-Usage: pam [options] [<path>]
+Usage: mapper [options] [<path>]
 
 Generate an Architecture Context Artifact (ARCHITECTURE.md) for the given path.
 
@@ -216,8 +216,18 @@ Options:
     --show-temp         Render test/temp_* directories normally (do not policy-collapse)
   --out <file>        Output file (default: ARCHITECTURE.md)
 
+Contract Telemetry:
+    [C+] Contracted boundary (inbound and outbound anchors detected)
+    [C?] Partial contract (incomplete boundary definition)
+    [C0] Boundary without formal contract
+    [C~] Contract status undetermined
+
+Contract Telemetry signals are architectural facts.
+Agent interpretation rules are defined in:
+    docs/agent-interpretation.md
+
 If no path is provided, the current directory is analyzed.
 
-For more details, see the documentation at https://github.com/.../README.md
+For more details, see the documentation at https://github.com/Kwentin3/mapper
 `.trim());
 }

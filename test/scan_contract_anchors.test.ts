@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { scanContractAnchors } from '../src/contracts/scan_contract_anchors';
+import { scanContractAnchors } from '../src/contracts/scan_contract_anchors.js';
 
 test('ignores anchors inside comments and strings', () => {
   const src = `

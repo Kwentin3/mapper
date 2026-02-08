@@ -1,7 +1,7 @@
 import { describe, test, expect, afterEach, vi } from 'vitest'
-import { parseWithAst } from '../src/parser/ast_parser'
-import { parseWithRegex } from '../src/parser/regex_fallback'
-import type { ParseOptions } from '../src/parser/types'
+import { parseWithAst } from '../src/parser/ast_parser.js';
+import { parseWithRegex } from '../src/parser/regex_fallback.js';
+import type { ParseOptions } from '../src/parser/types.js';
 
 describe('Dynamic import detection', () => {
   afterEach(() => {

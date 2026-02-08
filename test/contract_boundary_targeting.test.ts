@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { getContractTargeting } from '../src/contracts/contract_targeting';
+import { getContractTargeting } from '../src/contracts/contract_targeting.js';
 
 test('boundary targeting true cases', () => {
   const paths = [

@@ -10,6 +10,18 @@ import type { ResolvedKind, ResolvedTarget, ResolverOptions, ResolveResult } fro
  */
 const DEFAULT_EXTENSIONS = ['ts', 'tsx', 'js', 'jsx', 'json', 'node', 'mjs', 'cjs'];
 
+function normalizeExtensionsList(extensions: string[] | undefined): string[] {
+  const input = extensions && extensions.length > 0 ? extensions : DEFAULT_EXTENSIONS;
+  const out: string[] = [];
+  for (const ext of input) {
+    const trimmed = ext.startsWith('.') ? ext.slice(1) : ext;
+    const lower = trimmed.toLowerCase();
+    if (lower === '') continue;
+    if (!out.includes(lower)) out.push(lower);
+  }
+  return out;
+}
+
 /**
  * Determine if a specifier is relative (starts with './' or '../') or absolute (starts with '/').
  */
@@ -133,8 +145,9 @@ function resolveInternal(
   specifier: string,
   options: ResolverOptions
 ): ResolvedTarget[] {
-  const { baseDir, projectRoot, extensions = DEFAULT_EXTENSIONS } = options;
-  const finalExtensions = reorderExtensionsForJsFallback(specifier, extensions);
+  const { baseDir, projectRoot } = options;
+  const normalizedExtensions = normalizeExtensionsList(options.extensions);
+  const finalExtensions = reorderExtensionsForJsFallback(specifier, normalizedExtensions);
   const resolvedAbsolute = isAbsoluteSpecifier(specifier)
     ? resolve(projectRoot, specifier.slice(1)) // strip leading '/'
     : resolve(baseDir, specifier);
@@ -265,8 +278,9 @@ export function resolveSpecifier(
   if (isBare) {
     const pathCandidates = expandTsconfigPaths(specifier, options);
     const pathTargets: ResolvedTarget[] = [];
+    const normalizedExtensions = normalizeExtensionsList(options.extensions);
     for (const cand of pathCandidates) {
-      const probed = probeFile(cand, options.extensions || DEFAULT_EXTENSIONS);
+      const probed = probeFile(cand, normalizedExtensions);
       if (probed) {
         pathTargets.push({
           path: toProjectRelativePath(probed, options.projectRoot),
@@ -292,8 +306,9 @@ export function resolveSpecifier(
   if (isHash) {
     const importCandidates = expandPackageImports(specifier, options);
     const importTargets: ResolvedTarget[] = [];
+    const normalizedExtensions = normalizeExtensionsList(options.extensions);
     for (const cand of importCandidates) {
-      const probed = probeFile(cand, options.extensions || DEFAULT_EXTENSIONS);
+      const probed = probeFile(cand, normalizedExtensions);
       if (probed) {
         importTargets.push({
           path: toProjectRelativePath(probed, options.projectRoot),

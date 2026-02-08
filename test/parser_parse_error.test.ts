@@ -1,6 +1,6 @@
 import { describe, test, expect, afterEach, vi } from 'vitest'
-import { parseFile } from '../src/parser/parse_file'
-import type { ParseOptions } from '../src/parser/types'
+import { parseFile } from '../src/parser/parse_file.js';
+import type { ParseOptions } from '../src/parser/types.js';
 
 describe('Parser error recovery', () => {
   afterEach(() => {

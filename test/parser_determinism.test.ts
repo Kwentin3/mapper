@@ -1,7 +1,7 @@
 import { describe, test, expect, afterEach, vi } from 'vitest'
-import { parseFile } from '../src/parser/parse_file'
-import { stableJsonStringify } from '../src/utils/determinism'
-import type { ParseOptions } from '../src/parser/types'
+import { parseFile } from '../src/parser/parse_file.js';
+import { stableJsonStringify } from '../src/utils/determinism.js';
+import type { ParseOptions } from '../src/parser/types.js';
 
 describe('Parser determinism', () => {
   afterEach(() => {

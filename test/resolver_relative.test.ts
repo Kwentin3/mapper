@@ -44,6 +44,17 @@ describe('resolver relative paths', () => {
         expect(result.warnings).toHaveLength(0);
     });
 
+    it('accepts extensions provided with leading dots', () => {
+        const result = resolveSpecifier('./a', {
+            baseDir: join(tempDir, 'src'),
+            projectRoot: tempDir,
+            extensions: ['.ts', '.js'],
+        });
+        expect(result.resolved).toHaveLength(1);
+        expect(result.resolved[0].path).toBe('src/a.ts');
+        expect(result.warnings).toHaveLength(0);
+    });
+
     it('resolves ../a from nested directory', () => {
         const result = resolveSpecifier('../a', {
             baseDir: join(tempDir, 'src/nested'),

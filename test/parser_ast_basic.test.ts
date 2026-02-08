@@ -1,6 +1,6 @@
 import { describe, test, expect, afterEach, vi } from 'vitest'
-import { parseWithAst } from '../src/parser/ast_parser'
-import type { ParseOptions } from '../src/parser/types'
+import { parseWithAst } from '../src/parser/ast_parser.js';
+import type { ParseOptions } from '../src/parser/types.js';
 
 describe('AST parser basic extraction', () => {
   afterEach(() => {

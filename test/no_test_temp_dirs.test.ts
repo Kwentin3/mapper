@@ -22,10 +22,10 @@ describe('no leftover test temp dirs under repo root', () => {
     }
 
     const staleTempDirs = entries.filter(name => {
-      // Ignore known per-test validation temp dirs which are created during the
-      // current test run and expected by other contract tests.
-      if (name.startsWith('temp_path_validation_')) return false;
+      // Legacy: older test runs may have left these behind in the repo. The scanner
+      // excludes them from maps, and current tests no longer create them under `test/`.
       if (!(name.startsWith('temp_') || name.startsWith('temp') || name.startsWith('tmp_'))) return false;
+      if (name.startsWith('temp_path_validation_')) return false;
       try {
         const st = statSync(path.join(testDir, name));
         return (now - st.mtimeMs) > staleThresholdMs;

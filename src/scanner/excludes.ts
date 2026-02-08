@@ -4,6 +4,14 @@
 
 const DEFAULT_EXCLUDES = ['node_modules', 'dist', 'build', '.git', 'tmp', 'temp'] as const;
 
+// Prefix-based exclusions for repo-relative POSIX paths. Keep this list small and
+// specific: these are known transient artifacts that should not pollute maps.
+const DEFAULT_PREFIX_EXCLUDES = [
+    // Created by legacy CLI path validation tests when run from the repo root.
+    // Even if stale dirs exist on disk, we should not render them in maps.
+    'test/temp_path_validation_',
+] as const;
+
 /**
  * Determine whether a file/directory should be excluded from scanning.
  *
@@ -32,5 +40,10 @@ export function shouldExclude(
     // Also allow exact relative-path exclusions (POSIX normalized)
     const normRel = stablePathNormalize(relPath);
     if (allExcludes.includes(normRel)) return true;
+
+    // Prefix-based exclusions (repo-relative POSIX paths).
+    for (const prefix of DEFAULT_PREFIX_EXCLUDES) {
+        if (normRel.startsWith(prefix)) return true;
+    }
     return false;
 }

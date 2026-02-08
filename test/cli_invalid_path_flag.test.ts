@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { run } from '../src/cli/run.js';
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { createTempRepoDir } from './helpers/temp_dirs.js';
 
 describe('CLI path validation', () => {
     let consoleErrorSpy: any;
@@ -46,16 +47,17 @@ describe('CLI path validation', () => {
 
     describe('path is a file, not a directory', () => {
         let tempFile: string;
+        let tempDir: string;
 
         beforeEach(async () => {
-            const tempDir = join(__dirname, 'temp_path_validation_' + Math.random().toString(36).slice(2));
+            tempDir = createTempRepoDir('temp_path_validation');
             await fs.mkdir(tempDir, { recursive: true });
             tempFile = join(tempDir, 'file.txt');
             await fs.writeFile(tempFile, 'dummy');
         });
 
         afterEach(async () => {
-            await fs.rm(tempFile, { recursive: true, force: true });
+            await fs.rm(tempDir, { recursive: true, force: true });
         });
 
         it('exits with code 1', async () => {
@@ -75,7 +77,7 @@ describe('CLI path validation', () => {
         let tempDir: string;
 
         beforeEach(async () => {
-            tempDir = join(__dirname, 'temp_valid_' + Math.random().toString(36).slice(2));
+            tempDir = createTempRepoDir('temp_valid');
             await fs.mkdir(tempDir, { recursive: true });
         });
 

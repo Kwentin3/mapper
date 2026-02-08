@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "clean:artifacts": "node scripts/clean_artifacts.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

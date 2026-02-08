@@ -1,6 +1,6 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { Profile, DEFAULT_PROFILE, getBuiltInProfile } from './profiles';
+import { Profile, DEFAULT_PROFILE, getBuiltInProfile, SemanticProfileV0 } from './profiles';
 
 /**
  * Configuration file name (without extension) that the tool will look for.
@@ -21,6 +21,47 @@ export interface UserConfig {
     monorepo?: boolean;
     layerAware?: boolean;
     extensions?: string[];
+    semanticProfile?: Partial<SemanticProfileV0>;
+}
+
+function normalizePosixPatterns(values: string[]): string[] {
+    return values
+        .map(value => value.replace(/\\/g, '/'))
+        .sort((a, b) => a.localeCompare(b));
+}
+
+function normalizeAnchors(values: string[]): string[] {
+    return [...values].sort((a, b) => a.localeCompare(b));
+}
+
+function mergeSemanticProfile(
+    base?: SemanticProfileV0,
+    override?: Partial<SemanticProfileV0>
+): SemanticProfileV0 | undefined {
+    if (!base && !override) {
+        return undefined;
+    }
+
+    const boundary = {
+        include: override?.boundary?.include ?? base?.boundary.include ?? [],
+        exclude: override?.boundary?.exclude ?? base?.boundary.exclude ?? [],
+    };
+    const anchors = {
+        inbound: override?.anchors?.inbound ?? base?.anchors.inbound ?? [],
+        outbound: override?.anchors?.outbound ?? base?.anchors.outbound ?? [],
+    };
+
+    return {
+        version: 0,
+        boundary: {
+            include: normalizePosixPatterns(boundary.include),
+            exclude: normalizePosixPatterns(boundary.exclude),
+        },
+        anchors: {
+            inbound: normalizeAnchors(anchors.inbound),
+            outbound: normalizeAnchors(anchors.outbound),
+        },
+    };
 }
 
 /**
@@ -66,6 +107,7 @@ export function mergeConfigIntoProfile(
         monorepo: config.monorepo ?? base.monorepo,
         layerAware: config.layerAware ?? base.layerAware,
         extensions: config.extensions ?? base.extensions,
+        semanticProfile: mergeSemanticProfile(base.semanticProfile, config.semanticProfile),
     };
 }
 

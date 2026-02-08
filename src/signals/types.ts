@@ -2,6 +2,8 @@
  * Signal types for architecture analysis.
  */
 
+import type { ContractSignalMap } from './contract_types.js';
+
 export type SignalKind = 'risk' | 'hint' | 'nav' | 'context';
 
 export interface Signal {
@@ -27,6 +29,7 @@ export interface SignalsResult {
   hubsFanIn: SummaryItem[];
   hubsFanOut: SummaryItem[];
   warnings: string[];
+  contractSignals: ContractSignalMap;
 }
 
 export interface SignalBudgets {

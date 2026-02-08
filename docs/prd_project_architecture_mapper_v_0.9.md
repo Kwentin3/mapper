@@ -293,7 +293,21 @@ Alphabetical within each group.
 
 ---
 
-## 9. Adaptive Token Budgeting
+## 9. Architectural Signal Layers
+
+- Signals are grouped into layers to keep meaning stable and deterministic.
+- This is a conceptual grouping, not a new pipeline or rendering mechanism.
+- Layer 1: Dependency/HUB structure (imports, fan-in/out) from static graph only.
+- Layer 2: Boundary telemetry.
+   - Surface/navigation: public API surface, entrypoints, test linkage.
+   - Contract telemetry: [C+] [C?] [C0] [C~], anchor-based I/O boundaries.
+- Layer 3: Heuristics & hints (candidates, risks) from static anchors/graph/file structure only.
+- UNKNOWN is the safe default; prefer `[C~]` over false `[C+]` certainty.
+- Layers do not enforce policy; they only annotate evidence for agents.
+- No runtime or behavioral inference is permitted in any layer.
+- Layer-crossing rules are planned (see v0.9.2+), not enforced today.
+
+## 10. Adaptive Token Budgeting
 
 ### Decision
 
@@ -319,7 +333,7 @@ When estimated output exceeds token budget:
 
 ---
 
-## 10. Domain-Specific Signals (1C / OData)
+## 11. Domain-Specific Signals (1C / OData)
 
 ### Decision
 
@@ -328,6 +342,7 @@ Domain-specific signals (e.g. `(i SCHEMA-DEPENDENT)`) are **NOT part of core**.
 ### Status
 
 * Reserved for **profiles / plugins**
+Profiles are semantic adapters for signal labeling; they do not validate or enforce architecture.
 
 ### Rationale
 
@@ -337,7 +352,7 @@ Domain-specific signals (e.g. `(i SCHEMA-DEPENDENT)`) are **NOT part of core**.
 
 ---
 
-## 11. Layer Violation Detection
+## 12. Layer Violation Detection
 
 ### Decision
 
@@ -355,7 +370,7 @@ Layer violation detection is moved **earlier** in roadmap.
 
 ---
 
-## 12. Task Capsule Mode (Deferred)
+## 13. Task Capsule Mode (Deferred)
 
 ### Decision
 
@@ -369,7 +384,7 @@ Layer violation detection is moved **earlier** in roadmap.
 
 ---
 
-## 13. Summary
+## 14. Summary
 
 This PDR ensures that:
 

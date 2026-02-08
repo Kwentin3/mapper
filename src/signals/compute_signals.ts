@@ -4,15 +4,18 @@
 
 import type { DependencyGraph } from '../graph/types.js';
 import type { ParseFileResult } from '../parser/types.js';
+import type { SemanticProfileV0 } from '../config/profiles.js';
 import type { Signal, SignalKind, FileSignals, SummaryItem, SignalsResult, SignalBudgets } from './types.js';
 import { rankByScore, takeTopN, fanIn, fanOut, rankEntrypoints } from './rank.js';
 import { stableStringCompare } from '../utils/determinism.js';
 import { computeContractSignals } from './contracts_signals.js';
+import { computeContractTelemetry } from './compute_contract_telemetry.js';
 
 export interface ComputeSignalsInput {
   files: string[];
   graph: DependencyGraph;
   parseResults: ParseFileResult[];
+  semanticProfile?: SemanticProfileV0;
   fileMeta: Record<string, { depth: number; loc?: number; exportCount?: number }>;
   budgets: SignalBudgets;
   thresholds: { bigLoc: number; godFanIn: number; deepPath: number; barrelExports: number };
@@ -236,6 +239,11 @@ export function computeSignals(input: ComputeSignalsInput): SignalsResult {
   if (fs.inline.length > inlinePerFileMax) fs.inline = fs.inline.slice(0, inlinePerFileMax);
   }
   const rankedPublicApi = rankEntrypoints(publicApiCandidates);
+  const contractSignals = computeContractTelemetry({
+    files: sortedFiles,
+    semanticProfile: input.semanticProfile,
+    parseResults,
+  });
   
   // Apply top‑N budgeting
   const entrypoints = takeTopN(rankedEntrypoints, entrypointsTopN);
@@ -250,5 +258,6 @@ export function computeSignals(input: ComputeSignalsInput): SignalsResult {
     hubsFanIn,
     hubsFanOut,
     warnings,
+    contractSignals,
   };
 }

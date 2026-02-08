@@ -11,8 +11,8 @@ import { getViewBudgets } from './budgets.js';
 import type { SignalBudgets } from '../signals/types.js';
 import { stableStringCompare, stablePathNormalize } from '../utils/determinism.js';
 import { classifyPathKind, formatTruncationNotice, formatHubTruncationHint } from './format.js';
-import { scanContractAnchors } from '../contracts/scan_contract_anchors.js';
-import { getContractTargeting } from '../contracts/contract_targeting.js';
+import type { DirNode, FileNode } from '../scanner/types.js';
+import type { ContractSignal, ContractSignalMap, ContractStatus } from '../signals/contract_types.js';
 
 /**
  * Convert a profile's signal‑budget settings to the SignalBudgets expected by the summary renderer.
@@ -65,6 +65,12 @@ export function renderArchitectureMd(
   }
   lines.push(summary);
   lines.push('');
+
+  const contractCoverage = renderContractCoverage(signals?.contractSignals ?? {});
+  if (contractCoverage) {
+    lines.push(contractCoverage);
+    lines.push('');
+  }
 
   // 2b. Local Dependencies (budgeted derived view)
   // Select top M fan-in and top M fan-out hubs deterministically.
@@ -146,50 +152,19 @@ export function renderArchitectureMd(
         lines.push(`\`${normTarget}\` [${kind}]${hubTag}`);
         lines.push('');
 
-        // Contract Telemetry block (render-only)
-        // Use parseResults if available (attached by pipeline)
-        const pr = (input as any).parseResults ? (input as any).parseResults.find((r: any) => r.file === normTarget) : undefined;
-        let boundary = false;
-        let hasInput = false;
-        let hasOutput = false;
-        let inputAnchors: string[] = [];
-        let outputAnchors: string[] = [];
-        if (pr && typeof pr.source === 'string') {
-          const anchors = scanContractAnchors(pr.source);
-          hasInput = anchors.hasInput;
-          hasOutput = anchors.hasOutput;
-          inputAnchors = anchors.inputAnchors.slice();
-          outputAnchors = anchors.outputAnchors.slice();
+        const contractSignal = signals?.contractSignals?.[normTarget];
+        if (contractSignal) {
+          const inbound = (contractSignal.evidence?.anchorsFound?.inbound ?? []).slice().sort(stableStringCompare);
+          const outbound = (contractSignal.evidence?.anchorsFound?.outbound ?? []).slice().sort(stableStringCompare);
+          const fmtAnchors = (arr: string[]) => (arr.length > 0 ? arr.join(', ') : '(none)');
+
+          lines.push('### Contract Telemetry');
+          lines.push('');
+          lines.push(`- Status: ${contractSignal.status}`);
+          lines.push(`- Inbound anchors: ${fmtAnchors(inbound)}`);
+          lines.push(`- Outbound anchors: ${fmtAnchors(outbound)}`);
+          lines.push('');
         }
-        boundary = getContractTargeting(normTarget).isBoundary;
-
-        // Formatting helpers
-        const N = 5;
-        const fmtListWithRest = (arr: string[], cap: number) => {
-          if (!arr || arr.length === 0) return { line: '—', rest: 0 };
-          const shown = cap === Infinity ? arr : arr.slice(0, cap);
-          const rest = Math.max(0, arr.length - shown.length);
-          const base = shown.join(', ');
-          return { line: base, rest };
-        };
-
-    const telemetryIn = fmtListWithRest(inputAnchors, fullSignals ? Infinity : N);
-    const telemetryOut = fmtListWithRest(outputAnchors, fullSignals ? Infinity : N);
-
-        lines.push('### Contract Telemetry');
-        lines.push('');
-        lines.push(`- Boundary: ${boundary ? 'yes' : 'no'}`);
-        lines.push(`- Input: ${hasInput ? 'yes' : 'no'}`);
-        lines.push(`- Output: ${hasOutput ? 'yes' : 'no'}`);
-    lines.push(`- Input anchors: ${telemetryIn.line}`);
-    if (!fullSignals && telemetryIn.rest > 0) {
-      lines.push(formatTruncationNotice(telemetryIn.rest));
-    }
-    lines.push(`- Output anchors: ${telemetryOut.line}`);
-    if (!fullSignals && telemetryOut.rest > 0) {
-      lines.push(formatTruncationNotice(telemetryOut.rest));
-    }
-        lines.push('');
 
     const incomingArr: string[] = targetNode ? ((targetNode.incoming instanceof Set) ? Array.from(targetNode.incoming) : (targetNode.incoming ?? [])) : [];
     const outgoingArr: string[] = targetNode ? ((targetNode.outgoing instanceof Set) ? Array.from(targetNode.outgoing) : (targetNode.outgoing ?? [])) : [];
@@ -431,11 +406,157 @@ export function renderArchitectureMd(
   lines.push('');
 
   // 4. The tree itself
-  const treeOutput = renderTree(input, { focus, depth, profile, fullSignals, collapse, showOrphans, focusFile: opts.focusFile, focusDepth: (opts as any).focusDepth });
+  let treeOutput = renderTree(input, { focus, depth, profile, fullSignals, collapse, showOrphans, focusFile: opts.focusFile, focusDepth: (opts as any).focusDepth });
+  treeOutput = applyContractMarkersToTree(treeOutput, signals?.contractSignals ?? {}, input.tree as DirNode);
   lines.push('```');
   lines.push(treeOutput);
   lines.push('```');
 
   const content = lines.join('\n').trim() + '\n';
   return { content };
+}
+
+function collectPathSets(root: DirNode): { fileSet: Set<string>; dirSet: Set<string> } {
+  const fileSet = new Set<string>();
+  const dirSet = new Set<string>();
+  const walk = (node: DirNode | FileNode) => {
+    if (node.kind === 'file') {
+      fileSet.add(stablePathNormalize(node.relPath));
+      return;
+    }
+    if (node.relPath) {
+      dirSet.add(stablePathNormalize(node.relPath));
+    }
+    for (const child of node.children) {
+      walk(child);
+    }
+  };
+  walk(root);
+  return { fileSet, dirSet };
+}
+
+function extractTreeNodeName(content: string): string {
+  const tokens = [' [HUB]', ' (!', ' (?', ' (→', ' (i', ' (←', ' ('];
+  let end = content.length;
+  for (const token of tokens) {
+    const idx = content.indexOf(token);
+    if (idx >= 0 && idx < end) end = idx;
+  }
+  return content.slice(0, end).trim();
+}
+
+function insertContractMarker(line: string, marker: string): string {
+  if (line.includes(marker)) return line;
+  const tokens = [' (!', ' (?', ' (→', ' (i', ' (←'];
+  let idx = -1;
+  for (const token of tokens) {
+    const pos = line.indexOf(token);
+    if (pos >= 0 && (idx < 0 || pos < idx)) idx = pos;
+  }
+  if (idx < 0) return line + marker;
+  return line.slice(0, idx) + marker + line.slice(idx);
+}
+
+function applyContractMarkersToTree(
+  treeOutput: string,
+  contractSignals: ContractSignalMap,
+  root: DirNode
+): string {
+  const entries = Object.entries(contractSignals ?? {});
+  if (entries.length === 0) return treeOutput;
+
+  const contractMap = new Map<string, ContractSignal>();
+  for (const [file, signal] of entries) {
+    contractMap.set(stablePathNormalize((file || '').replace(/\\/g, '/')), signal);
+  }
+
+  const { fileSet, dirSet } = collectPathSets(root);
+  const lines = treeOutput.split('\n');
+  const pathStack: string[] = [];
+
+  const processed = lines.map((line) => {
+    const match = /^(.*?)(├── |└── )(.+)$/.exec(line);
+    if (!match) return line;
+
+    const prefix = match[1] + match[2];
+    const content = match[3];
+    const depth = Math.max(0, Math.floor(prefix.length / 4) - 1);
+    const name = extractTreeNodeName(content);
+    if (!name) return line;
+
+    const parentParts = pathStack.slice(0, depth);
+    const relPath = parentParts.concat([name]).join('/');
+    const normPath = stablePathNormalize(relPath);
+
+    if (dirSet.has(normPath)) {
+      pathStack[depth] = name;
+      pathStack.length = depth + 1;
+      return line;
+    }
+
+    if (!fileSet.has(normPath)) {
+      return line;
+    }
+
+    const signal = contractMap.get(normPath);
+    if (!signal || signal.status === 'C~') return line;
+    return insertContractMarker(line, ` [${signal.status}]`);
+  });
+
+  return processed.join('\n');
+}
+
+function renderContractCoverage(signals: ContractSignalMap): string {
+  const entries = Object.entries(signals ?? {})
+    .map(([file, signal]) => ({
+      file: stablePathNormalize((file || '').replace(/\\/g, '/')),
+      signal,
+    }))
+    .sort((a, b) => stableStringCompare(a.file, b.file));
+
+  if (entries.length === 0) return '';
+
+  const counts: Record<ContractStatus, number> = {
+    'C+': 0,
+    'C?': 0,
+    'C0': 0,
+    'C~': 0,
+  };
+
+  for (const entry of entries) {
+    counts[entry.signal.status] += 1;
+  }
+
+  const highRisk = entries.filter(entry => entry.signal.status === 'C0' || entry.signal.status === 'C?');
+  const cap = 5;
+  const shown = highRisk.slice(0, cap);
+  const more = Math.max(0, highRisk.length - shown.length);
+
+  const lines: string[] = [];
+  lines.push('## Contract coverage');
+  lines.push('');
+  lines.push(`- C+: ${counts['C+']}`);
+  lines.push(`- C?: ${counts['C?']}`);
+  lines.push(`- C0: ${counts['C0']}`);
+  lines.push(`- C~: ${counts['C~']}`);
+  lines.push('');
+  lines.push('### High-risk (C0/C?)');
+  if (shown.length === 0) {
+    lines.push('- none');
+  } else {
+    for (const entry of shown) {
+      lines.push(`- \`${entry.file}\` (${entry.signal.status})`);
+    }
+    if (more > 0) {
+      lines.push(`- +${more} more`);
+    }
+  }
+  lines.push('');
+  lines.push('### Legend');
+  lines.push('- [C+] boundary with inbound + outbound anchors');
+  lines.push('- [C?] boundary with partial anchors');
+  lines.push('- [C0] boundary with no anchors');
+  lines.push('- [C~] not in boundary or unreadable');
+
+  return lines.join('\n').trim();
 }

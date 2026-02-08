@@ -174,6 +174,7 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
         files,
         graph,
         parseResults: parsed,
+        semanticProfile: profile.semanticProfile,
         fileMeta,
         budgets: opts.fullSignals ? {
             entrypointsTopN: Infinity,

@@ -31,7 +31,53 @@ export interface Profile {
     layerAware: boolean;
     /** Default file extensions to consider (empty = all) */
     extensions: string[];
+    /** Optional semantic profile for contract telemetry (v0) */
+    semanticProfile?: SemanticProfileV0;
 }
+
+export interface SemanticBoundaryRules {
+    include: string[];
+    exclude: string[];
+}
+
+export interface SemanticAnchors {
+    inbound: string[];
+    outbound: string[];
+}
+
+export interface SemanticProfileV0 {
+    version: 0;
+    boundary: SemanticBoundaryRules;
+    anchors: SemanticAnchors;
+}
+
+const DEFAULT_SEMANTIC_PROFILE: SemanticProfileV0 = {
+    version: 0,
+    boundary: {
+        include: [
+            'src/**/api.{ts,tsx,js,jsx}',
+            'src/**/index.{ts,tsx,js,jsx}',
+            'src/**/routes.{ts,tsx,js,jsx}',
+        ],
+        exclude: [
+            '**/*.spec.*',
+            '**/*.test.*',
+            '**/__mocks__/**',
+            '**/__tests__/**',
+            '**/build/**',
+            '**/dist/**',
+            '**/mocks/**',
+            '**/node_modules/**',
+            '**/out/**',
+            '**/test/**',
+            '**/tests/**',
+        ],
+    },
+    anchors: {
+        inbound: ['@inbound'],
+        outbound: ['@outbound'],
+    },
+};
 
 /** Default profile as defined in PRD v0.8 */
 export const DEFAULT_PROFILE: Profile = {
@@ -52,6 +98,7 @@ export const DEFAULT_PROFILE: Profile = {
     monorepo: false,
     layerAware: false,
     extensions: [],
+    semanticProfile: DEFAULT_SEMANTIC_PROFILE,
 };
 
 /** Built‑in profiles registry */

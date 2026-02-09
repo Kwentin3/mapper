@@ -14,6 +14,7 @@ tmp2/
 test/temp_*
 tmp_*.md
 .tmp_cli_help.txt
+.tmp/
 рефлексия*.txt
 
 # Pack files

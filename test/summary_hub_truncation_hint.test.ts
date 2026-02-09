@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { renderArchitectureMd } from '../src/render/render_architecture_md.js';
-import { formatHubTruncationHint } from '../src/render/format.js';
+import { formatTruncationNotice } from '../src/render/format.js';
 
 describe('summary hub truncation hint (L9.8)', () => {
-  it('shows hub-aware truncation hint when a truncated list concerns a hub and hides it under --full-signals; deterministic', async () => {
+  it('shows canonical truncation notice (no redundant HUB hint) and hides truncation under --full-signals; deterministic', async () => {
     const nodeId = 'src/foo.ts';
 
     // Construct a minimal graph where nodeId has many incoming edges
@@ -50,11 +50,13 @@ describe('summary hub truncation hint (L9.8)', () => {
     const r2 = renderArchitectureMd({ tree, signals, graph }, { profile: 'default', fullSignals: true });
     const md2 = r2.content;
 
-    // The hub-aware hint must appear in the baseline (budgeted) render
-    expect(md1).toContain(formatHubTruncationHint());
+    // Baseline must show canonical truncation notice for list cap (default LIST_BUDGET=3): 10 - 3 = 7 hidden.
+    expect(md1).toContain(formatTruncationNotice(7));
+    // No redundant HUB-specific hint line should be emitted.
+    expect(md1).not.toContain('Note: this [HUB] list is truncated by budget; rerun with --full-signals to inspect full blast radius.');
 
-    // Under full-signals the hint should not be present (no truncation)
-    expect(md2).not.toContain(formatHubTruncationHint());
+    // Under full-signals there must be no truncation notice
+    expect(md2).not.toContain('Truncated by budget; rerun with --full-signals');
 
     // Determinism: repeated baseline render is identical
     const r3 = renderArchitectureMd({ tree, signals, graph }, { profile: 'default', fullSignals: false });

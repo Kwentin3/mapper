@@ -29,7 +29,7 @@ describe('CLI positional out handling', () => {
     });
 
     it('errors when both --out and positional out are provided', async () => {
-        const result = await run(['--out', 'OUT1.md', tempDir, 'OUT2.md']);
+        const result = await run(['--out', 'OUT1.md', tempDir, 'OUT2.md'], { log: () => {}, error: () => {} });
         expect(result.exitCode).toBe(1);
         // Neither OUT2.md (positional) nor OUT1.md should be created in tempDir because of error
         const out1 = join(tempDir, 'OUT1.md');
@@ -41,7 +41,7 @@ describe('CLI positional out handling', () => {
     });
 
     it('errors when too many positional arguments are provided', async () => {
-        const result = await run([tempDir, 'OUT.md', 'EXTRA.md']);
+        const result = await run([tempDir, 'OUT.md', 'EXTRA.md'], { log: () => {}, error: () => {} });
         expect(result.exitCode).toBe(1);
         const out = join(tempDir, 'OUT.md');
         const exists = await fs.access(out).then(() => true).catch(() => false);

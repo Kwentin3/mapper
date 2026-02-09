@@ -15,5 +15,10 @@ describe('AI preamble contract', () => {
         expect(AI_PREAMBLE).toContain('### Summary markers & budgeting');
         expect(AI_PREAMBLE).toContain('[PROD] / [TEST]');
         expect(AI_PREAMBLE).toContain('--full-signals');
+        // UX contract: clarify summary entrypoints vs inline (→ ENTRYPOINT)
+        expect(AI_PREAMBLE).toContain('Summary "### Entrypoints" lists [PROD] entrypoints');
+        expect(AI_PREAMBLE).toContain('inline (→ ENTRYPOINT) can also appear on [TEST] files with fan-in 0');
+        // UX contract: agent interpretation rules link must be present in the artifact
+        expect(AI_PREAMBLE).toContain('docs/agent-interpretation.md');
     });
 });

@@ -36,11 +36,3 @@ export function classifyPathKind(path: string): 'PROD' | 'TEST' {
 export function formatTruncationNotice(hiddenCount: number): string {
     return `Truncated by budget; rerun with --full-signals (+${hiddenCount} more).`;
 }
-
-/**
- * HUB-aware truncation hint: short, ASCII, deterministic.
- * Render-only guidance visible when a truncated list contains a hub.
- */
-export function formatHubTruncationHint(): string {
-    return 'Note: this [HUB] list is truncated by budget; rerun with --full-signals to inspect full blast radius.';
-}

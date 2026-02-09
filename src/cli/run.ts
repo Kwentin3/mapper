@@ -7,7 +7,15 @@ import { dirname, resolve } from 'path';
  * CLI entry point that processes command‑line arguments.
  * Returns an object with the exit code to be used by `process.exit`.
  */
-export async function run(argv: string[]): Promise<{ exitCode: number }> {
+export type CliIO = {
+    log: (...args: any[]) => void;
+    error: (...args: any[]) => void;
+};
+
+export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCode: number }> {
+    const log = io?.log ?? console.log;
+    const error = io?.error ?? console.error;
+
     const { values, positionals } = parseArgs({
         args: argv,
         options: {
@@ -45,7 +53,7 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
                 // check if any char in arg is unknown
                 const chars = arg.slice(1);
                 if ([...chars].some(ch => unknownFlags.includes(ch))) {
-                    console.error(`Error: Invalid path '${arg}': path must not start with '-'.`);
+                    error(`Error: Invalid path '${arg}': path must not start with '-'.`);
                     return { exitCode: 1 };
                 }
             }
@@ -54,13 +62,13 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
 
     // --help / -h
     if (values.help) {
-        printHelp();
+        printHelp(log);
         return { exitCode: 0 };
     }
 
     // --version / -v
     if (values.version) {
-        console.log('Project Architecture Mapper v0.8');
+        log('Project Architecture Mapper v0.8');
         return { exitCode: 0 };
     }
 
@@ -70,27 +78,27 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
     // only when --out is not provided. If both are provided, treat as conflict.
     if (positionals.length > 1) {
         if (typeof values.out === 'string') {
-            console.error('Error: output path provided both as --out and as a positional argument. Use --out only.');
+            error('Error: output path provided both as --out and as a positional argument. Use --out only.');
             return { exitCode: 1 };
         }
         if (positionals.length > 2) {
-            console.error('Error: too many positional arguments. Usage: [<root>] [<out>]');
+            error('Error: too many positional arguments. Usage: [<root>] [<out>]');
             return { exitCode: 1 };
         }
         // Treat second positional as --out when not specified
         values.out = positionals[1];
     }
     if (rawPath.startsWith('-')) {
-        console.error(`Error: Invalid path '${rawPath}': path must not start with '-'.`);
+        error(`Error: Invalid path '${rawPath}': path must not start with '-'.`);
         return { exitCode: 1 };
     }
     const resolvedPath = resolve(rawPath);
     if (!existsSync(resolvedPath)) {
-        console.error(`Error: Invalid path '${rawPath}': directory does not exist.`);
+        error(`Error: Invalid path '${rawPath}': directory does not exist.`);
         return { exitCode: 1 };
     }
     if (!statSync(resolvedPath).isDirectory()) {
-        console.error(`Error: Invalid path '${rawPath}': path is not a directory.`);
+        error(`Error: Invalid path '${rawPath}': path is not a directory.`);
         return { exitCode: 1 };
     }
     const rootDir = resolvedPath;
@@ -100,7 +108,7 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
     if (values.depth !== undefined) {
         const parsed = parseInt(values.depth as string, 10);
         if (isNaN(parsed) || parsed < 0) {
-            console.error('Error: --depth must be a non‑negative integer.');
+            error('Error: --depth must be a non‑negative integer.');
             return { exitCode: 1 };
         }
         depth = parsed;
@@ -111,7 +119,7 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
     if (values['focus-depth'] !== undefined) {
         const parsed = parseInt(values['focus-depth'] as string, 10);
         if (isNaN(parsed) || parsed < 0) {
-            console.error('Error: --focus-depth must be a non‑negative integer.');
+            error('Error: --focus-depth must be a non‑negative integer.');
             return { exitCode: 1 };
         }
         focusDepth = parsed;
@@ -132,12 +140,12 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
         if (typeof values.out === 'string') {
             const candidateOut = resolve(rootDir, values.out);
             if (existsSync(candidateOut) && statSync(candidateOut).isDirectory()) {
-                console.error('Error: --out must be a file path, not a directory.');
+                error('Error: --out must be a file path, not a directory.');
                 return { exitCode: 1 };
             }
             const parent = dirname(candidateOut);
             if (!existsSync(parent)) {
-                console.error('Error: output parent directory does not exist.');
+                error('Error: output parent directory does not exist.');
                 return { exitCode: 1 };
             }
         }
@@ -146,7 +154,7 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
         if (typeof values.budget === 'string') {
             const allowed = new Set(['small', 'default', 'large']);
             if (!allowed.has(values.budget)) {
-                console.error(`Error: invalid --budget value: ${values.budget}`);
+                error(`Error: invalid --budget value: ${values.budget}`);
                 return { exitCode: 1 };
             }
         }
@@ -170,33 +178,33 @@ export async function run(argv: string[]): Promise<{ exitCode: number }> {
         writeFileSync(outPath, result.markdown, 'utf-8');
 
         // Print summary
-        console.log(`✅ Architecture map written to ${outPath}`);
+        log(`✅ Architecture map written to ${outPath}`);
         if (result.warnings.length > 0) {
-            console.log(`⚠️  ${result.warnings.length} warning(s):`);
+            log(`⚠️  ${result.warnings.length} warning(s):`);
             for (const w of result.warnings.slice(0, 5)) {
-                console.log(`   ${w}`);
+                log(`   ${w}`);
             }
             if (result.warnings.length > 5) {
-                console.log(`   … and ${result.warnings.length - 5} more`);
+                log(`   … and ${result.warnings.length - 5} more`);
             }
         } else {
-            console.log('✅ No warnings.');
+            log('✅ No warnings.');
         }
 
         return { exitCode: 0 };
     } catch (err) {
         // Deterministic user error for missing focus-file
         if (err instanceof Error && err.message.startsWith('Error: --focus-file not found: ')) {
-            console.error(err.message);
+            error(err.message);
             return { exitCode: 1 };
         }
-        console.error('Internal error:', err instanceof Error ? err.message : String(err));
+        error('Internal error:', err instanceof Error ? err.message : String(err));
         return { exitCode: 2 };
     }
 }
 
-function printHelp() {
-    console.log(`
+function printHelp(log: (...args: any[]) => void) {
+    log(`
 Usage: mapper [options] [<path>]
 
 Generate an Architecture Context Artifact (ARCHITECTURE.md) for the given path.

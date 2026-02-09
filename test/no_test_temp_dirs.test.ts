@@ -36,9 +36,11 @@ describe('no leftover test temp dirs under repo root', () => {
 
     expect(staleTempDirs.length).toBe(0);
 
-    // Also ensure no top-level leftover audit dirs older than threshold exist
+    // Also ensure no top-level leftover audit dirs older than threshold exist.
+    // Note: `out/` is a normal user-facing output directory for this project; its
+    // existence alone is not a reliable signal of stale test artifacts.
     const top = readdirSync(repoRoot, { withFileTypes: true }).filter(e => e.isDirectory()).map(d => d.name);
-    const candidates = ['out', 'tmp', 'tmp2', path.join('artifacts', 'cli-evidence')];
+    const candidates = ['tmp', 'tmp2', path.join('artifacts', 'cli-evidence')];
     const staleTop = candidates.filter(c => {
       const p = path.join(repoRoot, c);
       try {

@@ -10,7 +10,7 @@ import { getBuiltInProfile } from '../config/profiles.js';
 import { getViewBudgets } from './budgets.js';
 import type { SignalBudgets } from '../signals/types.js';
 import { stableStringCompare, stablePathNormalize } from '../utils/determinism.js';
-import { classifyPathKind, formatTruncationNotice, formatHubTruncationHint } from './format.js';
+import { classifyPathKind, formatTruncationNotice } from './format.js';
 import type { DirNode, FileNode } from '../scanner/types.js';
 import type { ContractSignal, ContractSignalMap, ContractStatus } from '../signals/contract_types.js';
 
@@ -55,13 +55,32 @@ export function renderArchitectureMd(
   lines.push(AI_PREAMBLE);
   lines.push('');
 
+  // 1b. Generation metadata (deterministic, machine-independent provenance)
+  const focusDepthK = opts.focusFile
+    ? (typeof (opts as any).focusDepth === 'number' ? (opts as any).focusDepth : 1)
+    : undefined;
+  const budgetProfile = typeof (opts as any).budget === 'string' ? (opts as any).budget : 'default';
+
+  lines.push('## Generation Metadata');
+  lines.push('');
+  lines.push(`- View mode: ${fullSignals ? 'full-signals' : 'budgeted'}`);
+  lines.push(`- Profile: ${profile}`);
+  lines.push(`- Budget profile: ${budgetProfile}${fullSignals ? ' (ignored when --full-signals)' : ''}`);
+  if (typeof focus === 'string' && focus.length > 0) lines.push(`- Focus dir: ${focus}`);
+  if (typeof depth === 'number') lines.push(`- Depth limit: ${depth}`);
+  if (typeof opts.focusFile === 'string' && opts.focusFile.length > 0) {
+    lines.push(`- Focus file: ${opts.focusFile}`);
+    lines.push(`- Focus depth: ${focusDepthK}`);
+  }
+  if (showOrphans) lines.push('- ORPHAN rendering: enabled (--show-orphans)');
+  lines.push('');
+
   // 2. Header summary blocks
   const budgets = profileToBudgets(profile);
   const summary = renderSummary(signals, budgets, fullSignals);
   // If focusFile + capsule depth is active, annotate the summary with the task capsule view line
   if (opts.focusFile) {
-    const k = typeof (opts as any).focusDepth === 'number' ? (opts as any).focusDepth : 1;
-    lines.push(`(i VIEW: task capsule, focus=${opts.focusFile}, depth=${k})`);
+    lines.push(`(i VIEW: task capsule, focus=${opts.focusFile}, depth=${focusDepthK})`);
   }
   lines.push(summary);
   lines.push('');
@@ -186,19 +205,10 @@ export function renderArchitectureMd(
         lines.push(`- ` + '`←`' + ` Importers (repo-local): ${inLine}`);
         if (!fullSignals && inMore > 0) {
           lines.push(formatTruncationNotice(inMore));
-          // If this Local Dependencies entry is a known hub, add the hub-aware hint
-          const idNorm = stablePathNormalize(normNormTarget);
-          if (hubSet.has(idNorm)) {
-            lines.push(formatHubTruncationHint());
-          }
         }
         lines.push(`- ` + '`→`' + ` Imports (repo-local): ${outLine}`);
         if (!fullSignals && outMore > 0) {
           lines.push(formatTruncationNotice(outMore));
-          const idNorm = stablePathNormalize(normNormTarget);
-          if (hubSet.has(idNorm)) {
-            lines.push(formatHubTruncationHint());
-          }
         }
         lines.push('');
       }
@@ -343,8 +353,13 @@ export function renderArchitectureMd(
     }
 
     if (selected.length > 0) {
-      lines.push('## Local Dependencies (Budgeted)');
-      lines.push('Списки отсортированы лексикографически по POSIX (repo-relative). Показаны первые N зависимостей; используйте --full-signals для полного списка.');
+      if (fullSignals) {
+        lines.push('## Local Dependencies');
+        lines.push('Списки отсортированы лексикографически по POSIX (repo-relative). В full-signals режиме показан полный список.');
+      } else {
+        lines.push('## Local Dependencies (Budgeted)');
+        lines.push('Списки отсортированы лексикографически по POSIX (repo-relative). Показаны первые N зависимостей; используйте --full-signals для полного списка.');
+      }
       lines.push('');
       for (const id of selected) {
         lines.push(`\`${id}\``);
@@ -376,19 +391,10 @@ export function renderArchitectureMd(
         lines.push(`- \`←\` ${inLine}`);
         if (!fullSignals && inMore > 0) {
           lines.push(formatTruncationNotice(inMore));
-          // If this Local Dependencies entry is a known hub, add the hub-aware hint
-          const idNorm = stablePathNormalize(id.replace(/\\/g, '/'));
-          if (hubSet.has(idNorm)) {
-            lines.push(formatHubTruncationHint());
-          }
         }
         lines.push(`- \`→\` ${outLine}`);
         if (!fullSignals && outMore > 0) {
           lines.push(formatTruncationNotice(outMore));
-          const idNorm = stablePathNormalize(id.replace(/\\/g, '/'));
-          if (hubSet.has(idNorm)) {
-            lines.push(formatHubTruncationHint());
-          }
         }
         lines.push('');
       }

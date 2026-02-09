@@ -8,6 +8,7 @@ export const AI_PREAMBLE = `## AI Preamble — How to Use This Map
 
 ### Navigation Strategy
 1. Start from (→ ENTRYPOINT) files.
+   Summary "### Entrypoints" lists [PROD] entrypoints; inline (→ ENTRYPOINT) can also appear on [TEST] files with fan-in 0.
 2. For changes, use --focus-file=<path> to see ← importers and → imports.
 3. Use Fan‑out hubs to find orchestrators; use Fan‑in hubs to assess blast radius.
 4. If you see (!) signals, treat them as high risk and investigate before refactor.
@@ -16,18 +17,19 @@ export const AI_PREAMBLE = `## AI Preamble — How to Use This Map
 ### Summary markers & budgeting
 [HUB] marks graph hubs (high fan-in or fan-out). Render-only; not a contract or API guarantee.
  - [PROD] / [TEST] markers appear in summary sections to separate production vs test code.
- - Budgeted lists may be truncated; use --full-signals to disable budgets and show full lists.
+ - In budgeted mode, lists may be truncated; use --full-signals to disable budgets and show full lists.
 
 ### Interpretation rules for agents
 - Absence of an item or signal in a budgeted output does NOT mean absence in the codebase; budgets may truncate results.
-- For risky decisions rerun with --full-signals to obtain the full view.
+- If this view is budgeted, rerun with --full-signals to obtain the full view for risky decisions.
 - [HUB] marks graph hubs (high fan-in or fan-out). Render-only; not a contract or API guarantee.
 - Signals are heuristic navigation aids, not formal verification.
 - AI Preamble is human guidance, not a machine schema; prefer stable top-level "##" headings as anchors when parsing.
+- Agent interpretation rules: docs/agent-interpretation.md
 
 Agent guidance for [HUB]
 - If you change a [HUB] file: use --focus-file <path> to inspect importers/imports and assess blast radius.
-- If signals are missing or unclear, rerun with --full-signals before making risky decisions.
+- If this view is budgeted and signals are missing or unclear, rerun with --full-signals before making risky decisions.
 - Run tests after modifying hub files; hub changes often have wide impact.
 
 ### Signal Priority

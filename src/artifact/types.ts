@@ -1,6 +1,7 @@
 import type { AssertionKind, SignalKind, SummaryItem } from '../signals/types.js';
 
 export const AGENT_SNAPSHOT_SCHEMA_V1 = 'mapper.agent.v1' as const;
+export const AGENT_DIFF_SCHEMA_V1 = 'mapper.diff.v1' as const;
 
 export interface AgentSignalV1 {
   kind: SignalKind;
@@ -66,4 +67,44 @@ export interface AgentSnapshotV1 {
     hubsFanOut: SummaryItem[];
   };
   warnings: string[];
+}
+
+export interface AgentSignalDeltaV1 {
+  file: string;
+  kind: SignalKind;
+  code: string;
+}
+
+export interface AgentDiffV1 {
+  schemaVersion: typeof AGENT_DIFF_SCHEMA_V1;
+  base: {
+    schemaVersion: string;
+    stats: AgentSnapshotV1['stats'];
+  };
+  head: {
+    schemaVersion: string;
+    stats: AgentSnapshotV1['stats'];
+  };
+  delta: {
+    fileCount: number;
+    nodeCount: number;
+    edgeCount: number;
+    warningCount: number;
+  };
+  changes: {
+    filesAdded: string[];
+    filesRemoved: string[];
+    edgesAdded: string[];
+    edgesRemoved: string[];
+    signalsAdded: AgentSignalDeltaV1[];
+    signalsRemoved: AgentSignalDeltaV1[];
+    entrypointsAdded: string[];
+    entrypointsRemoved: string[];
+    publicApiAdded: string[];
+    publicApiRemoved: string[];
+    hubsFanInAdded: string[];
+    hubsFanInRemoved: string[];
+    hubsFanOutAdded: string[];
+    hubsFanOutRemoved: string[];
+  };
 }

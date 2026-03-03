@@ -1,8 +1,9 @@
 import { parseArgs } from 'util';
 import { runPipeline } from '../pipeline/run_pipeline.js';
-import { writeFileSync, existsSync, statSync } from 'fs';
+import { writeFileSync, existsSync, statSync, readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { isStopError, type StopSignal } from '../stop/stop_signal.js';
+import { assertAgentSnapshot, computeArtifactDiff } from '../artifact/diff_artifacts.js';
 
 /**
  * CLI entry point that processes command‑line arguments.
@@ -30,6 +31,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
             profile: { type: 'string' },
             format: { type: 'string' },
             'strict-flags': { type: 'boolean' },
+            diff: { type: 'boolean' },
             focus: { type: 'string' },
             depth: { type: 'string' },
             'full-signals': { type: 'boolean' },
@@ -47,7 +49,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
     });
 
     // Detect unknown short flags (single dash with unknown characters)
-    const knownOpts = new Set(['help', 'config', 'profile', 'format', 'strict-flags', 'focus', 'focus-file', 'depth', 'full-signals', 'show-orphans', 'show-temp', 'budget', 'out', 'version', 'h', 'v']);
+    const knownOpts = new Set(['help', 'config', 'profile', 'format', 'strict-flags', 'diff', 'focus', 'focus-file', 'depth', 'full-signals', 'show-orphans', 'show-temp', 'budget', 'out', 'version', 'h', 'v']);
 
     // allow focus-depth as known
     knownOpts.add('focus-depth');
@@ -96,6 +98,159 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
     // --version / -v
     if (values.version) {
         log('Project Architecture Mapper v0.8');
+        return { exitCode: 0 };
+    }
+
+    const isDiffMode = values.diff === true;
+    const format = typeof values.format === 'string' ? values.format : (isDiffMode ? 'json' : 'markdown');
+    if (format !== 'markdown' && format !== 'json') {
+        error(`Error: invalid --format value: ${format}`);
+        return stopReturn({
+            code: 'STOP_INVALID_FORMAT',
+            reason: `Error: invalid --format value: ${format}`,
+            blocking: true,
+            severity: 'stop',
+        }, 1);
+    }
+    if (isDiffMode && format !== 'json') {
+        error('Error: --diff supports only --format json.');
+        return stopReturn({
+            code: 'STOP_INVALID_FORMAT',
+            reason: 'Error: --diff supports only --format json.',
+            blocking: true,
+            severity: 'stop',
+        }, 1);
+    }
+
+    if (isDiffMode) {
+        if (positionals.length !== 2) {
+            error('Error: --diff expects exactly 2 positional arguments: <base.json> <head.json>.');
+            return stopReturn({
+                code: 'STOP_INVALID_DIFF_USAGE',
+                reason: 'Error: --diff expects exactly 2 positional arguments: <base.json> <head.json>.',
+                blocking: true,
+                severity: 'stop',
+            }, 1);
+        }
+
+        const baseRaw = positionals[0];
+        const headRaw = positionals[1];
+        if (baseRaw.startsWith('-') || headRaw.startsWith('-')) {
+            const bad = baseRaw.startsWith('-') ? baseRaw : headRaw;
+            error(`Error: Invalid path '${bad}': path must not start with '-'.`);
+            return stopReturn({
+                code: 'STOP_INVALID_PATH',
+                reason: `Error: Invalid path '${bad}': path must not start with '-'.`,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'path', value: bad },
+            }, 1);
+        }
+
+        const basePath = resolve(baseRaw);
+        const headPath = resolve(headRaw);
+        if (!existsSync(basePath) || !statSync(basePath).isFile()) {
+            error(`Error: invalid artifact path: ${baseRaw}`);
+            return stopReturn({
+                code: 'STOP_INVALID_PATH',
+                reason: `Error: invalid artifact path: ${baseRaw}`,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'path', value: baseRaw },
+            }, 1);
+        }
+        if (!existsSync(headPath) || !statSync(headPath).isFile()) {
+            error(`Error: invalid artifact path: ${headRaw}`);
+            return stopReturn({
+                code: 'STOP_INVALID_PATH',
+                reason: `Error: invalid artifact path: ${headRaw}`,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'path', value: headRaw },
+            }, 1);
+        }
+
+        const outFile = typeof values.out === 'string' ? values.out : 'ARCHITECTURE_DIFF.json';
+        const outPath = resolve(outFile);
+        if (existsSync(outPath) && statSync(outPath).isDirectory()) {
+            error('Error: --out must be a file path, not a directory.');
+            return stopReturn({
+                code: 'STOP_INVALID_OUTPUT_PATH',
+                reason: 'Error: --out must be a file path, not a directory.',
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'path', value: outFile },
+            }, 1);
+        }
+        const outParent = dirname(outPath);
+        if (!existsSync(outParent)) {
+            error('Error: output parent directory does not exist.');
+            return stopReturn({
+                code: 'STOP_INVALID_OUTPUT_PATH',
+                reason: 'Error: output parent directory does not exist.',
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'path', value: outFile },
+            }, 1);
+        }
+
+        let baseParsed: unknown;
+        let headParsed: unknown;
+        try {
+            baseParsed = JSON.parse(readFileSync(basePath, 'utf-8'));
+        } catch {
+            error(`Error: invalid artifact JSON: ${baseRaw}`);
+            return stopReturn({
+                code: 'STOP_INVALID_ARTIFACT_JSON',
+                reason: `Error: invalid artifact JSON: ${baseRaw}`,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'file', value: baseRaw },
+            }, 1);
+        }
+        try {
+            headParsed = JSON.parse(readFileSync(headPath, 'utf-8'));
+        } catch {
+            error(`Error: invalid artifact JSON: ${headRaw}`);
+            return stopReturn({
+                code: 'STOP_INVALID_ARTIFACT_JSON',
+                reason: `Error: invalid artifact JSON: ${headRaw}`,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'file', value: headRaw },
+            }, 1);
+        }
+
+        try {
+            assertAgentSnapshot(baseParsed);
+        } catch (err) {
+            const reason = err instanceof Error ? err.message : String(err);
+            error(reason);
+            return stopReturn({
+                code: 'STOP_INVALID_ARTIFACT_SCHEMA',
+                reason,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'file', value: baseRaw },
+            }, 1);
+        }
+        try {
+            assertAgentSnapshot(headParsed);
+        } catch (err) {
+            const reason = err instanceof Error ? err.message : String(err);
+            error(reason);
+            return stopReturn({
+                code: 'STOP_INVALID_ARTIFACT_SCHEMA',
+                reason,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'file', value: headRaw },
+            }, 1);
+        }
+
+        const diff = computeArtifactDiff(baseParsed, headParsed);
+        writeFileSync(outPath, JSON.stringify(diff, null, 2) + '\n', 'utf-8');
+        log(`✅ Artifact diff written to ${outPath}`);
         return { exitCode: 0 };
     }
 
@@ -196,16 +351,6 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         configPath = resolve(values.config);
     }
 
-    const format = typeof values.format === 'string' ? values.format : 'markdown';
-    if (format !== 'markdown' && format !== 'json') {
-        error(`Error: invalid --format value: ${format}`);
-        return stopReturn({
-            code: 'STOP_INVALID_FORMAT',
-            reason: `Error: invalid --format value: ${format}`,
-            blocking: true,
-            severity: 'stop',
-        }, 1);
-    }
     const defaultOutFile = format === 'json' ? 'ARCHITECTURE.json' : 'ARCHITECTURE.md';
 
     try {
@@ -313,9 +458,11 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
 
 function printHelp(log: (...args: any[]) => void) {
     log(`
-Usage: mapper [options] [<path>]
+Usage:
+  mapper [options] [<path>]
+  mapper --diff [--out <file>] <base.json> <head.json>
 
-Generate an Architecture Context Artifact (ARCHITECTURE.md) for the given path.
+Generate an Architecture Context Artifact for a path, or diff two JSON artifacts.
 
 Options:
   -h, --help          Show this help message
@@ -323,16 +470,17 @@ Options:
   --config <file>     Use a custom configuration file
   --profile <name>    Use a built‑in profile (default, fsd, monorepo)
   --format <name>     Output format: markdown, json
+  --diff              Compare two JSON artifacts and output a JSON diff
   --strict-flags      Fail on unknown flags (agent-safe mode)
-    --budget <name>     View budget profile: small, default, large
+  --budget <name>     View budget profile: small, default, large
   --focus <path>      Focus the tree on a specific subdirectory
-        --focus-file <path> Focus a single repo-relative file for a deep‑dive (use POSIX / separators)
+  --focus-file <path> Focus a single repo-relative file for a deep‑dive (use POSIX / separators)
   --focus-depth <K>   When --focus-file is set, fully expand nodes within K hops (default: 1)
   --depth <number>    Limit tree depth (0 = root only)
   --full-signals      Show all signals, ignoring budget limits
   --show-orphans      Show ORPHAN signals for test/docs/config files
-    --show-temp         Render test/temp_* directories normally (do not policy-collapse)
-  --out <file>        Output file (default: ARCHITECTURE.md)
+  --show-temp         Render test/temp_* directories normally (do not policy-collapse)
+  --out <file>        Output file (default: ARCHITECTURE.md/ARCHITECTURE.json/ARCHITECTURE_DIFF.json)
 
 Contract Telemetry:
     [C+] Contracted boundary (inbound and outbound anchors detected)

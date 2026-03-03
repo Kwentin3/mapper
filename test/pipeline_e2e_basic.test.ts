@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { basename, join } from 'path';
 import { runPipeline } from '../src/pipeline/run_pipeline.js';
 
 describe('pipeline E2E basic', () => {
@@ -38,7 +38,7 @@ describe('pipeline E2E basic', () => {
         expect(result.markdown).toMatch(/├──|└──|│/);
 
         // Ensure the root directory appears in the tree (collapsed or not)
-        const rootName = tempDir.split('\\').pop() || 'temp_pipeline_e2e';
+        const rootName = basename(tempDir) || 'temp_pipeline_e2e';
         expect(result.markdown).toContain(rootName);
 
         // Ensure there is no error indication

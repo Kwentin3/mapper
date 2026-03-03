@@ -112,10 +112,11 @@ Rule: Do not infer “absence” from a budgeted artifact.
 Why: Budgeting truncates.
 Evidence: AI Preamble: “does NOT mean absence ... budgets may truncate.” (`.tmp/nav-doctrine/ARCH.budgeted.md`)
 
-Rule: Do not ignore `docs/agent-interpretation.md` if you are using this artifact as agent context.
+Rule: Do not ignore `docs/contracts/agent-interpretation.md` if you are using this artifact as agent context.
 Why: Both CLI help and AI Preamble point to it as the location of interpretation rules.
-Evidence: CLI help: “Agent interpretation rules are defined in: docs/agent-interpretation.md”; AI Preamble includes `Agent interpretation rules: docs/agent-interpretation.md`. (`.tmp/nav-doctrine/cli-help.txt`, `.tmp/nav-doctrine/ARCH.budgeted.md`)
+Evidence: CLI help: “Agent interpretation rules are defined in: docs/contracts/agent-interpretation.md”; AI Preamble includes `Agent interpretation rules: docs/contracts/agent-interpretation.md`. (`.tmp/nav-doctrine/cli-help.txt`, `.tmp/nav-doctrine/ARCH.budgeted.md`)
 
 Rule: When evaluating `npm test`, do not treat the presence of the literal `Error:` in logs as a failure without checking exit status.
 Why: UX audit captured `Error:` lines in passing test runs as a false-alarm pattern.
 Evidence: `UX_AUDIT.Mapper.report.md:212` (“stderr ... Error: ... при общем PASS”).
+

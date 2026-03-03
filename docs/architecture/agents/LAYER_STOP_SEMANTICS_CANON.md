@@ -2,7 +2,7 @@
 
 ## 1) Purpose
 
-Определяет, когда кодовый агент обязан остановиться перед потенциальным cross-layer шагом, какие признаки считать “risk of layer violation”, и какой минимальный запрос контекста сделать вместо попытки “угадать”. Основано на: `LAYER_VIOLATION_AGENT_AUDIT.report.md`, `AGENT_NAVIGATION_DOCTRINE.md`, `AGENT_TEXT_STRICTNESS_CANON.md`, PDR v0.9 (Layer Violation Detection планируется, не описано как enforced сейчас: `docs/prd_project_architecture_mapper_v_0.9.md` §12).
+Определяет, когда кодовый агент обязан остановиться перед потенциальным cross-layer шагом, какие признаки считать “risk of layer violation”, и какой минимальный запрос контекста сделать вместо попытки “угадать”. Основано на: `LAYER_VIOLATION_AGENT_AUDIT.report.md`, `AGENT_NAVIGATION_DOCTRINE.md`, `AGENT_TEXT_STRICTNESS_CANON.md`, PDR v0.9 (Layer Violation Detection планируется, не описано как enforced сейчас: `docs/product-ux/prd_project_architecture_mapper_v_0.9.md` §12).
 
 ## 2) STOP Types
 
@@ -109,4 +109,5 @@ Questions: #1, #2, #6. Next minimal step: запросить policy-контек
 - E3 “вынести helper в src/utils и импортировать везде”.
 Triggers: LS-06, LS-07, LS-04/LS-05. Level: HARD.
 Questions: #2, #4, #5, #6. Next minimal step: запросить правило one-way boundary/permission для `src/utils` и направлений доступа.
+
 

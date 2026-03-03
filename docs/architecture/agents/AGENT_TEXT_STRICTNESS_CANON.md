@@ -44,7 +44,7 @@ Justification: 1 строка, строго по `AGENT_TRUST_DRIFT_AUDIT.report
 | TA-06 | preamble | LAW | В аудите: anchor “summary Entrypoints vs inline ENTRYPOINT” (anti-drift). |
 | TA-07 | help | LAW | В аудите: anchor “--show-orphans реально расширяет ORPHAN-рендеринг”. |
 | TA-08 | help | LAW | В аудите: anchor “--focus-file для deep-dive importers/imports”. |
-| TA-09 | help | GUIDANCE | В аудите: anchor-указатель на `docs/agent-interpretation.md` (без проверки полноты). |
+| TA-09 | help | GUIDANCE | В аудите: anchor-указатель на `docs/contracts/agent-interpretation.md` (без проверки полноты). |
 | TA-10 | help | GUIDANCE | В аудите: “Contract Telemetry ... facts” упомянуто как anchor, но TP-05 NOT-VERIFIABLE. |
 
 ## 4) Conflict & Ambiguity Notes
@@ -69,4 +69,5 @@ Limited-context interpretation: агент либо будет делать ли
 
 - Treated as LAW: TP-10/12; TA-02/03/04/05/06 (если фрагмент включает соответствующие строки/`##` секции).
 - Drift prevented by scale: без `Truncated by budget...` и/или `## Generation Metadata` агент не повышает выводы до уровня фактов (не делает “absence-as-evidence”).
+
 

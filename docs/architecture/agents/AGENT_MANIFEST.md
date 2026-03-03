@@ -33,7 +33,7 @@ Rules:
 ### 3.1 Precedence
 1) Architecture contracts and schemas are the law.
 2) This manifest defines agent behavior (always in effect).
-3) If `docs/test_policy_manifest.md` is provided, it overrides only **test mechanics** (assertion patterns, hermetic rules, async patterns).
+3) If `docs/contracts/test_policy_manifest.md` is provided, it overrides only **test mechanics** (assertion patterns, hermetic rules, async patterns).
 
 ### 3.2 Task Modes (Declared by Orchestrator)
 Each run MUST declare one mode:
@@ -86,7 +86,7 @@ Interpretation by mode:
 - `MODE=TEST`: MUST produce tests that specify behavior; no implementation edits.
 - `MODE=CODE`: MUST NOT implement behavior that is not already specified by tests; otherwise return `STOP_TESTS_REQUIRED`.
 
-Test mechanics are defined in `docs/test_policy_manifest.md` when provided.
+Test mechanics are defined in `docs/contracts/test_policy_manifest.md` when provided.
 
 ## 6) NO_CONTRACT_NO_CODE (Hard Stop)
 If, while specifying behavior (tests or pseudo-tests), you discover:
@@ -154,3 +154,4 @@ Final output MUST include:
 - files changed
 - commands executed
 - brief summary proving checks passed
+

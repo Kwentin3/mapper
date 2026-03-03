@@ -62,7 +62,7 @@ node dist/cli/main.js --help
   - `--full-signals      Show all signals, ignoring budget limits`
   - `--focus-file <path> Focus a single repo-relative file for a deep‑dive (use POSIX / separators)`
   - `Contract Telemetry signals are architectural facts.`
-  - `Agent interpretation rules are defined in: docs/agent-interpretation.md`
+  - `Agent interpretation rules are defined in: docs/contracts/agent-interpretation.md`
 
 ### 3.2 B1 “быстрый обзор”
 
@@ -186,13 +186,13 @@ Note: this [HUB] list is truncated by budget; rerun with --full-signals to inspe
 
 ### 5.4 Контракты (где хотелось правила интерпретации рядом)
 
-- Pain: CLI help явно отправляет к `docs/agent-interpretation.md` как к “rules”, но артефакт (B1/B2/B3) не содержит ссылку на это как на обязательный шаг, и агенту приходится переключаться между help/доками/артефактом.
+- Pain: CLI help явно отправляет к `docs/contracts/agent-interpretation.md` как к “rules”, но артефакт (B1/B2/B3) не содержит ссылку на это как на обязательный шаг, и агенту приходится переключаться между help/доками/артефактом.
 - Где проявилось: stdout `node dist/cli/main.js --help`.
 - Почему боль для агента: правила интерпретации вынесены наружу, а агент обычно работает из артефакта `ARCHITECTURE.md` как единого контекста.
 - Минимальный пример:
 ```text
 Agent interpretation rules are defined in:
-    docs/agent-interpretation.md
+    docs/contracts/agent-interpretation.md
 ```
 
 ### 5.5 Бюджеты (truncation мешает/помогает)
@@ -231,4 +231,5 @@ Error: too many positional arguments. Usage: [<root>] [<out>]
 ## 7) Next minimal step (1 пункт)
 
 Проверить UX ветки ошибок CLI “руками агента” на реальном репозитории: прогнать `node dist/cli/main.js --focus-file <bad-path> .` и `--focus-depth -1`, зафиксировать exit code и текст ошибки из stdout/stderr (насколько следующий шаг понятен из сообщения).
+
 

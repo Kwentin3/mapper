@@ -10,7 +10,7 @@ Artifacts directory: `out/replay-agent/`
 
 1) Ориентация стала проще (context load снизился) за счёт того, что “первичный контекст режима/флагов” теперь стабильно находится внутри каждого артефакта в `## Generation Metadata` (а не восстанавливается “по памяти”). Evidence: `out/replay-agent/B1.quick.md` и `out/replay-agent/B2.full.md` содержат `## Generation Metadata` и `View mode: ...` (см. §3, B1/B2 excerpts).
 
-2) Дрейф доверия (help/preamble) снизился за счёт переноса ключевых anti-drift пояснений “в сам артефакт”: entrypoints (summary vs inline), “signals ≠ verification”, и ссылка на `docs/agent-interpretation.md`. Evidence: `out/replay-agent/B1.quick.md:5`, `out/replay-agent/B1.quick.md:20`, `out/replay-agent/B1.quick.md:22` (см. §3, B1).
+2) Дрейф доверия (help/preamble) снизился за счёт переноса ключевых anti-drift пояснений “в сам артефакт”: entrypoints (summary vs inline), “signals ≠ verification”, и ссылка на `docs/contracts/agent-interpretation.md`. Evidence: `out/replay-agent/B1.quick.md:5`, `out/replay-agent/B1.quick.md:20`, `out/replay-agent/B1.quick.md:22` (см. §3, B1).
 
 3) Layer STOP Semantics реально помогает предотвращать “видно ≠ можно”: в протоколе явно зафиксированы HARD STOP для `src/* ↔ test/*` и “allowed-by-graph ≠ allowed-by-policy”. Evidence: `LAYER_STOP_SEMANTICS_CANON.md` триггеры `LS-01`, `LS-10`, `LS-11` (см. §4).
 
@@ -80,7 +80,7 @@ node dist/cli/main.js --show-orphans . --out out/replay-agent/B4.orphans.md
   - Anti-drift law present:
     - `Signals are heuristic navigation aids, not formal verification.` (`out/replay-agent/B1.quick.md:20`)
   - Interpretation rules pointer present:
-    - `Agent interpretation rules: docs/agent-interpretation.md` (`out/replay-agent/B1.quick.md:22`)
+    - `Agent interpretation rules: docs/contracts/agent-interpretation.md` (`out/replay-agent/B1.quick.md:22`)
 - Budgeted incompleteness is still a live concern:
   - Truncation hints present (count observed during audit): `Truncated by budget` occurrences in B1 = `12`.
 
@@ -178,7 +178,7 @@ Step-by-step (with Trust Anchors TA-XX and Layer STOP triggers LS-XX):
 
 - “Agent interpretation rules” pointer is now available in-artefact (less dependency on CLI help as a separate context).
   - Evidence (baseline pain): `UX_FIXES.Mapper.report.md` §1.4.
-  - Evidence (now): `out/replay-agent/B1.quick.md:22` contains `docs/agent-interpretation.md`.
+  - Evidence (now): `out/replay-agent/B1.quick.md:22` contains `docs/contracts/agent-interpretation.md`.
 
 - Redundant truncation note is gone (deduped).
   - Evidence (claimed change): `UX_FIXES.Mapper.report.md` §2.3 (“removed Note: this [HUB] list is truncated...”).
@@ -227,4 +227,5 @@ node dist/cli/main.js --full-signals --focus-file src/cli/run.ts --focus-depth 1
 ```
 
 Цель: зафиксировать, как меняются `← Importers` / `→ Imports` и `Impact Path` без budget-truncation, и оценить, насколько меньше “unknown” остаётся для агента.
+
 

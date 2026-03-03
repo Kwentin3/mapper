@@ -7,6 +7,9 @@ dist/
 # CLI-generated outputs / audits
 out/
 artifacts/cli-evidence/
+ARCHITECTURE.md
+ARCHITECTURE.json
+ARCHITECTURE_DIFF.json
 
 # Temp and test artifacts
 tmp/

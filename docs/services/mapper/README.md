@@ -73,15 +73,16 @@ npm test
 Важно: `ARCHITECTURE.md` генерируется CLI. Если карта устарела, перегенерируйте; не редактируйте вручную.
 
 ## Документация
-- `docs/CLI.md` — флаги CLI и рецепты.
-- `docs/DEV_GUIDE.md` — архитектура пайплайна, детерминизм, правила для derived views.
-- `docs/RENDER_CONTRACTS.md` — контракт рендера дерева (важно для совместимости вывода).
-- `docs/test_policy_manifest.md` — тестовая политика проекта.
-- `docs/prd_project_architecture_mapper_v_0.9.md` — **каноническая спецификация v0.9** (PRD намеренно заменён PDR).
-- `docs/adr_v_2_architecture_xray_evolution.md` — **vNext** (non-canonical для v0.9).
+- `docs/services/mapper/CLI.md` — флаги CLI и рецепты.
+- `docs/services/mapper/DEV_GUIDE.md` — архитектура пайплайна, детерминизм, правила для derived views.
+- `docs/contracts/RENDER_CONTRACTS.md` — контракт рендера дерева (важно для совместимости вывода).
+- `docs/contracts/test_policy_manifest.md` — тестовая политика проекта.
+- `docs/product-ux/prd_project_architecture_mapper_v_0.9.md` — **каноническая спецификация v0.9** (PRD намеренно заменён PDR).
+- `docs/architecture/adr/adr_v_2_architecture_xray_evolution.md` — **vNext** (non-canonical для v0.9).
 
 ## Troubleshooting
 Если видите `'mapper' is not recognized`:
 - Убедитесь, что пакет установлен: `npm install @kwentin3/mapper`.
 - Проверьте: `npx mapper --help`.
 - Альтернатива: `.\node_modules\.bin\mapper.cmd --help`.
+

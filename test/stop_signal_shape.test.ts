@@ -9,7 +9,7 @@ describe('StopSignal shape', () => {
       blocking: true,
       severity: 'stop' as const,
       scope: { kind: 'repo' as const, value: '.' },
-      law_ref: { doc: 'docs/AGENT_MANIFEST.md', anchor: 'Stop Signals (Routing)' },
+      law_ref: { doc: 'docs/architecture/agents/AGENT_MANIFEST.md', anchor: 'Stop Signals (Routing)' },
       unblock_hints: ['hint1'],
     };
 
@@ -30,4 +30,5 @@ describe('StopSignal shape', () => {
     expect(isStopSignal(err.stop)).toBe(true);
   });
 });
+
 

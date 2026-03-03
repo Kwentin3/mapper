@@ -5,7 +5,7 @@
 - Текущие артефакты маппера описывают **dependency graph** (importers/imports, hubs, entrypoints, truncation) и явно предупреждают, что “signals are heuristic … not formal verification” (`.tmp/nav-doctrine/ARCH.budgeted.md`).
 - В CLI help отсутствуют флаги/секция, которые бы описывали **permission graph** или правила слоёв; help фокусируется на путях/фокусе/бюджетах/ORPHAN/контрактной телеметрии (`.tmp/nav-doctrine/cli-help.txt`).
 - Агент по умолчанию выводит “слои” **неявно** из структуры путей (`src/cli`, `src/render`, `src/pipeline`, `test`, `docs`, `scripts`) и маркеров `[PROD]/[TEST]` (Project Tree + summary) без явных границ разрешённости (`.tmp/nav-doctrine/ARCH.budgeted.md`, `.tmp/nav-doctrine/ARCH.focus.md`).
-- PDR v0.9 фиксирует, что “Layer Violation Detection” перенесён ближе и размещён на roadmap (v0.9.2/v1.0), но в текущем help/артефакте нет отдельного слоя-правила/сигнала с таким названием (`docs/prd_project_architecture_mapper_v_0.9.md`).
+- PDR v0.9 фиксирует, что “Layer Violation Detection” перенесён ближе и размещён на roadmap (v0.9.2/v1.0), но в текущем help/артефакте нет отдельного слоя-правила/сигнала с таким названием (`docs/product-ux/prd_project_architecture_mapper_v_0.9.md`).
 - В результате “dependency graph ≠ permission graph” остаётся **ментальным правилом агента**, а не сигналом/контрактом артефакта: агент склонен считать “разрешено”, если не видит явного STOP cue (допущение из промта).
 - Ниже зафиксированы 5 типовых сценариев, где агент, опираясь на карту, может “честно” сделать cross-layer шаг без остановки, потому что карта показывает “видно/связано”, но не говорит “можно/нельзя”.
 
@@ -86,7 +86,7 @@
 | “Файл присутствует в Project Tree” | “Раз он в дереве, он часть допустимой области изменений/зависимостей” | Tree отражает скан/видимость, а не policy; permission graph отсутствует | `## Project Tree` показывает `docs/`, `scripts/`, `test/` рядом с `src/` (`.tmp/nav-doctrine/ARCH.budgeted.md`). |
 | “Есть import edge A → B” | “Значит A имеет право зависеть от B” | Edge показывает факт зависимости (dependency graph), но не “можно” как правило слоёв | Local Dependencies и Focused Deep-Dive показывают `→ Imports`/`← Importers` (`.tmp/nav-doctrine/ARCH.focus.md`). |
 | `[HUB]` | “Это центральный модуль, его можно использовать отовсюду” | Preamble прямо говорит: `[HUB]` “not a contract”; HUB не равен “официальная точка зависимости” | AI Preamble: “[HUB] … Render-only; not a contract …” (`.tmp/nav-doctrine/ARCH.budgeted.md`). |
-| Отсутствие сигнала “запрещено” | “Раз нет STOP, значит разрешено” | Это данное допущение агента из промта; текущие тексты его не опровергают правилами слоёв | В help/preamble нет layer-permission секций; PDR лишь размещает “Layer Violation Detection” на roadmap (`.tmp/nav-doctrine/cli-help.txt`, `.tmp/nav-doctrine/ARCH.budgeted.md`, `docs/prd_project_architecture_mapper_v_0.9.md`). |
+| Отсутствие сигнала “запрещено” | “Раз нет STOP, значит разрешено” | Это данное допущение агента из промта; текущие тексты его не опровергают правилами слоёв | В help/preamble нет layer-permission секций; PDR лишь размещает “Layer Violation Detection” на roadmap (`.tmp/nav-doctrine/cli-help.txt`, `.tmp/nav-doctrine/ARCH.budgeted.md`, `docs/product-ux/prd_project_architecture_mapper_v_0.9.md`). |
 
 ## 6) Minimal guardrail vocabulary (agent thinking, no enforcement)
 
@@ -104,3 +104,4 @@
 ## 7) Next minimal step (audit-only)
 
 Сделать “diff-аудит контекста” на одном реальном изменении: выбрать файл `[HUB]` (например `src/cli/run.ts` или `src/pipeline/run_pipeline.ts`) и зафиксировать, какие cross-folder импорты агент бы добавил “по умолчанию” при локальной задаче, и какие STOP cues он пытался бы найти в help/preamble/доках (без внесения изменений).
+

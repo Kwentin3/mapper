@@ -8,7 +8,7 @@
   },
   "files": [
     "dist",
-    "README.md",
+    "docs/services/mapper/README.md",
     "package.json"
   ],
   "dependencies": {

@@ -490,10 +490,11 @@ Contract Telemetry:
 
 Contract Telemetry signals are architectural facts.
 Agent interpretation rules are defined in:
-    docs/agent-interpretation.md
+    docs/contracts/agent-interpretation.md
 
 If no path is provided, the current directory is analyzed.
 
 For more details, see the documentation at https://github.com/Kwentin3/mapper
 `.trim());
 }
+

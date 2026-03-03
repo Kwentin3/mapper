@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 - Normalize tree renderer prefix logic: introduce canonical `buildTreePrefix` and unify node/stub rendering to fix misaligned vertical guides and inconsistent collapse stubs.
 
 ### Added
-- `docs/RENDER_CONTRACTS.md` — developer-facing contract and agent guidance for the renderer.
+- `docs/contracts/RENDER_CONTRACTS.md` — developer-facing contract and agent guidance for the renderer.
 
 ### Tests
 - Added regression tests covering indentation, focused stubs and collapse behavior; updated rendering tests to the canonical output.
@@ -35,3 +35,4 @@ All notable changes to this project will be documented in this file.
 
 ### Notes
 - The feature is render-only and preserves analysis truth: it only surfaces adjacency information from the existing dependency graph and does not change signal computation or project tree semantics. If the requested file is not found in the graph, the CLI fails deterministically with exit code 1 and message: `Error: --focus-file not found: <path>`.
+

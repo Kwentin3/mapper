@@ -25,7 +25,7 @@ export const AI_PREAMBLE = `## AI Preamble — How to Use This Map
 - [HUB] marks graph hubs (high fan-in or fan-out). Render-only; not a contract or API guarantee.
 - Signals are heuristic navigation aids, not formal verification.
 - AI Preamble is human guidance, not a machine schema; prefer stable top-level "##" headings as anchors when parsing.
-- Agent interpretation rules: docs/agent-interpretation.md
+- Agent interpretation rules: docs/contracts/agent-interpretation.md
 
 Agent guidance for [HUB]
 - If you change a [HUB] file: use --focus-file <path> to inspect importers/imports and assess blast radius.
@@ -39,3 +39,4 @@ Agent guidance for [HUB]
 - ORPHAN means "no repo-local importers" (or the equivalent in your project).
 - ORPHAN is not automatically safe; check PUBLIC-API / ENTRYPOINT / deep-dive before assuming low risk.
 `;
+

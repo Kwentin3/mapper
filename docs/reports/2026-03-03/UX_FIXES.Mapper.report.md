@@ -10,13 +10,13 @@
 3. Повторяющиеся truncation подсказки в focus-view:
    - Пример показывает `Truncated by budget...` + дополнительную строку: `Note: this [HUB] list is truncated...` (`UX_AUDIT.Mapper.report.md:166-168`)
 4. Agent interpretation rules “вынесены наружу”:
-   - “CLI help явно отправляет к `docs/agent-interpretation.md` … но артефакт … не содержит ссылку…” (`UX_AUDIT.Mapper.report.md:189`)
+   - “CLI help явно отправляет к `docs/contracts/agent-interpretation.md` … но артефакт … не содержит ссылку…” (`UX_AUDIT.Mapper.report.md:189`)
 5. `Error:` в `npm test` при PASS:
    - “`npm test` вывод содержит `stderr ... Error: ...` даже при общем PASS …” (`UX_AUDIT.Mapper.report.md:212`)
 
 ## 2) Что изменено (1–2 строки)
 
-1. В AI Preamble добавлены точные пояснения: summary-entrypoints vs inline `(→ ENTRYPOINT)` и ссылка на `docs/agent-interpretation.md`. (`src/render/preamble.ts`)
+1. В AI Preamble добавлены точные пояснения: summary-entrypoints vs inline `(→ ENTRYPOINT)` и ссылка на `docs/contracts/agent-interpretation.md`. (`src/render/preamble.ts`)
 2. В артефакт добавлен детерминированный блок `## Generation Metadata` с явным `View mode: budgeted|full-signals` и краткой provenance по флагам. (`src/render/render_architecture_md.ts`)
 3. Убрана избыточная строка `Note: this [HUB] list is truncated...` (оставлен один канонический `Truncated by budget...`). (`src/render/render_architecture_md.ts`, `src/render/format.ts`)
 4. `run()` для CLI получил опциональный `io` (log/error) для тестов, чтобы негативные кейсы не писали в реальный stderr при PASS. (`src/cli/run.ts`)
@@ -58,4 +58,5 @@ Get-FileHash .tmp/ux-fixes/det-run-2.md -Algorithm SHA256
 - SHA256 #1: `8241B593C480222DB16000DDB9E20508ABEB65CC01AE393FDCAA85434FAFA4ED`
 - SHA256 #2: `8241B593C480222DB16000DDB9E20508ABEB65CC01AE393FDCAA85434FAFA4ED`
 - Вердикт: `IDENTICAL`
+
 

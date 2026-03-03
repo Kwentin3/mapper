@@ -19,7 +19,7 @@
 - [HUB] marks graph hubs (high fan-in or fan-out). Render-only; not a contract or API guarantee.
 - Signals are heuristic navigation aids, not formal verification.
 - AI Preamble is human guidance, not a machine schema; prefer stable top-level "##" headings as anchors when parsing.
-- Agent interpretation rules: docs/agent-interpretation.md
+- Agent interpretation rules: docs/contracts/agent-interpretation.md
 
 Agent guidance for [HUB]
 - If you change a [HUB] file: use --focus-file <path> to inspect importers/imports and assess blast radius.
@@ -386,3 +386,4 @@ Truncated by budget; rerun with --full-signals (+3 more).
     ├── UX_AUDIT.Mapper.report.md (i ORPHAN)
     └── UX_FIXES.Mapper.report.md (i ORPHAN)
 ```
+

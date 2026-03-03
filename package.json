@@ -24,6 +24,10 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kwentin3/mapper"
+  },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "vitest": "^2.1.4"

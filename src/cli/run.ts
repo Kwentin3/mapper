@@ -2,6 +2,7 @@ import { parseArgs } from 'util';
 import { runPipeline } from '../pipeline/run_pipeline.js';
 import { writeFileSync, existsSync, statSync } from 'fs';
 import { dirname, resolve } from 'path';
+import { isStopError, type StopSignal } from '../stop/stop_signal.js';
 
 /**
  * CLI entry point that processes command‑line arguments.
@@ -12,9 +13,14 @@ export type CliIO = {
     error: (...args: any[]) => void;
 };
 
-export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCode: number }> {
+export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCode: number; stop?: StopSignal }> {
     const log = io?.log ?? console.log;
     const error = io?.error ?? console.error;
+
+    const stopReturn = (stop: StopSignal, exitCode: number) => {
+        error(stop.reason);
+        return { exitCode, stop };
+    };
 
     const { values, positionals } = parseArgs({
         args: argv,
@@ -54,7 +60,13 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
                 const chars = arg.slice(1);
                 if ([...chars].some(ch => unknownFlags.includes(ch))) {
                     error(`Error: Invalid path '${arg}': path must not start with '-'.`);
-                    return { exitCode: 1 };
+                    return stopReturn({
+                        code: 'STOP_INVALID_PATH',
+                        reason: `Error: Invalid path '${arg}': path must not start with '-'.`,
+                        blocking: true,
+                        severity: 'stop',
+                        scope: { kind: 'path', value: arg },
+                    }, 1);
                 }
             }
         }
@@ -79,27 +91,55 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
     if (positionals.length > 1) {
         if (typeof values.out === 'string') {
             error('Error: output path provided both as --out and as a positional argument. Use --out only.');
-            return { exitCode: 1 };
+            return stopReturn({
+                code: 'STOP_OUTPUT_PATH_CONFLICT',
+                reason: 'Error: output path provided both as --out and as a positional argument. Use --out only.',
+                blocking: true,
+                severity: 'stop',
+            }, 1);
         }
         if (positionals.length > 2) {
             error('Error: too many positional arguments. Usage: [<root>] [<out>]');
-            return { exitCode: 1 };
+            return stopReturn({
+                code: 'STOP_TOO_MANY_POSITIONALS',
+                reason: 'Error: too many positional arguments. Usage: [<root>] [<out>]',
+                blocking: true,
+                severity: 'stop',
+            }, 1);
         }
         // Treat second positional as --out when not specified
         values.out = positionals[1];
     }
     if (rawPath.startsWith('-')) {
         error(`Error: Invalid path '${rawPath}': path must not start with '-'.`);
-        return { exitCode: 1 };
+        return stopReturn({
+            code: 'STOP_INVALID_PATH',
+            reason: `Error: Invalid path '${rawPath}': path must not start with '-'.`,
+            blocking: true,
+            severity: 'stop',
+            scope: { kind: 'path', value: rawPath },
+        }, 1);
     }
     const resolvedPath = resolve(rawPath);
     if (!existsSync(resolvedPath)) {
         error(`Error: Invalid path '${rawPath}': directory does not exist.`);
-        return { exitCode: 1 };
+        return stopReturn({
+            code: 'STOP_INVALID_PATH',
+            reason: `Error: Invalid path '${rawPath}': directory does not exist.`,
+            blocking: true,
+            severity: 'stop',
+            scope: { kind: 'path', value: rawPath },
+        }, 1);
     }
     if (!statSync(resolvedPath).isDirectory()) {
         error(`Error: Invalid path '${rawPath}': path is not a directory.`);
-        return { exitCode: 1 };
+        return stopReturn({
+            code: 'STOP_INVALID_PATH',
+            reason: `Error: Invalid path '${rawPath}': path is not a directory.`,
+            blocking: true,
+            severity: 'stop',
+            scope: { kind: 'path', value: rawPath },
+        }, 1);
     }
     const rootDir = resolvedPath;
 
@@ -109,7 +149,12 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         const parsed = parseInt(values.depth as string, 10);
         if (isNaN(parsed) || parsed < 0) {
             error('Error: --depth must be a non‑negative integer.');
-            return { exitCode: 1 };
+            return stopReturn({
+                code: 'STOP_INVALID_DEPTH',
+                reason: 'Error: --depth must be a non‑negative integer.',
+                blocking: true,
+                severity: 'stop',
+            }, 1);
         }
         depth = parsed;
     }
@@ -120,7 +165,12 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         const parsed = parseInt(values['focus-depth'] as string, 10);
         if (isNaN(parsed) || parsed < 0) {
             error('Error: --focus-depth must be a non‑negative integer.');
-            return { exitCode: 1 };
+            return stopReturn({
+                code: 'STOP_INVALID_FOCUS_DEPTH',
+                reason: 'Error: --focus-depth must be a non‑negative integer.',
+                blocking: true,
+                severity: 'stop',
+            }, 1);
         }
         focusDepth = parsed;
     }
@@ -141,12 +191,24 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
             const candidateOut = resolve(rootDir, values.out);
             if (existsSync(candidateOut) && statSync(candidateOut).isDirectory()) {
                 error('Error: --out must be a file path, not a directory.');
-                return { exitCode: 1 };
+                return stopReturn({
+                    code: 'STOP_INVALID_OUTPUT_PATH',
+                    reason: 'Error: --out must be a file path, not a directory.',
+                    blocking: true,
+                    severity: 'stop',
+                    scope: { kind: 'path', value: values.out },
+                }, 1);
             }
             const parent = dirname(candidateOut);
             if (!existsSync(parent)) {
                 error('Error: output parent directory does not exist.');
-                return { exitCode: 1 };
+                return stopReturn({
+                    code: 'STOP_INVALID_OUTPUT_PATH',
+                    reason: 'Error: output parent directory does not exist.',
+                    blocking: true,
+                    severity: 'stop',
+                    scope: { kind: 'path', value: values.out },
+                }, 1);
             }
         }
 
@@ -155,7 +217,12 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
             const allowed = new Set(['small', 'default', 'large']);
             if (!allowed.has(values.budget)) {
                 error(`Error: invalid --budget value: ${values.budget}`);
-                return { exitCode: 1 };
+                return stopReturn({
+                    code: 'STOP_INVALID_BUDGET',
+                    reason: `Error: invalid --budget value: ${values.budget}`,
+                    blocking: true,
+                    severity: 'stop',
+                }, 1);
             }
         }
 
@@ -194,6 +261,16 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         return { exitCode: 0 };
     } catch (err) {
         // Deterministic user error for missing focus-file
+        if (isStopError(err)) {
+            // Render exactly the same text as before; object stays internal.
+            if (err.stop.code === 'STOP_FOCUS_FILE_NOT_FOUND') {
+                error(err.stop.reason);
+                return { exitCode: 1, stop: err.stop };
+            }
+            error('Internal error:', err.stop.reason);
+            return { exitCode: 2, stop: err.stop };
+        }
+
         if (err instanceof Error && err.message.startsWith('Error: --focus-file not found: ')) {
             error(err.message);
             return { exitCode: 1 };

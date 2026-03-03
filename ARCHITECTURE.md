@@ -70,7 +70,7 @@ Agent guidance for [HUB]
 - C+: 0
 - C?: 0
 - C0: 7
-- C~: 106
+- C~: 113
 
 ### High-risk (C0/C?)
 - `src/cli/index.ts` (C0)
@@ -92,7 +92,7 @@ Agent guidance for [HUB]
 `src/pipeline/run_pipeline.ts`
 - `←` `src/cli/run.ts`, `test/budget_profiles_contract.test.ts`, `test/classification_summary_annotation.test.ts`
 Truncated by budget; rerun with --full-signals (+22 more).
-- `→` `src/config/load.ts`, `src/utils/determinism.ts`
+- `→` `src/config/load.ts`, `src/stop/stop_signal.ts`, `src/utils/determinism.ts`
 
 `test/helpers/fixture_builder.ts`
 - `←` `test/budget_profiles_contract.test.ts`, `test/classification_summary_annotation.test.ts`, `test/contract_prd_truth_preservation_depth.test.ts`
@@ -115,8 +115,8 @@ Truncated by budget; rerun with --full-signals (+14 more).
 - `→` `src/pipeline/run_pipeline.ts`
 
 `src/render/render_architecture_md.ts`
-- `←` `src/render/index.ts`, `test/contract_signals_sticky_under_inline_budget.test.ts`, `test/contract_telemetry_not_sticky_budget.test.ts`
-Truncated by budget; rerun with --full-signals (+9 more).
+- `←` `src/render/index.ts`, `test/assertion_kind_render_stability.test.ts`, `test/contract_signals_sticky_under_inline_budget.test.ts`
+Truncated by budget; rerun with --full-signals (+10 more).
 - `→` `src/config/profiles.ts`, `src/render/budgets.ts`, `src/render/format.ts`
 Truncated by budget; rerun with --full-signals (+4 more).
 
@@ -157,9 +157,11 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   │   ├── project_mapper_prd_v0.6.md
     │   │   ├── project_mapper_prd_v0.7.md
     │   │   └── project_mapper_prd.md
+    │   ├── adr_v_2_architecture_xray_evolution.md
     │   ├── AGENT_MANIFEST.md
     │   ├── agent-interpretation.md
     │   ├── ARCHITECTURE_MAP.md
+    │   ├── AUDIT.EXTERNAL.PROJECT.MCP.ODATA.1C.1.report.md
     │   ├── CLI.md
     │   ├── deploy.md
     │   ├── DEV_GUIDE.md
@@ -194,13 +196,13 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   │   ├── regex_fallback.ts (←3 →1)
     │   │   └── types.ts (←1 →0)
     │   ├── pipeline
-    │   │   └── run_pipeline.ts [HUB] (? GOD-MODULE) (←25 →2)
+    │   │   └── run_pipeline.ts [HUB] (? GOD-MODULE) (←25 →3)
     │   ├── render
     │   │   ├── budgets.ts (←1 →0)
     │   │   ├── format.ts (←4 →1)
     │   │   ├── index.ts [HUB] (←5 →6)
     │   │   ├── preamble.ts (←5 →0)
-    │   │   ├── render_architecture_md.ts [HUB] (←12 →7)
+    │   │   ├── render_architecture_md.ts [HUB] (←13 →7)
     │   │   ├── render_summary.ts (←4 →1)
     │   │   ├── render_tree.ts (←10 →3)
     │   │   ├── smart_collapse.ts (←3 →0)
@@ -214,7 +216,7 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── scanner
     │   │   ├── excludes.ts (←2 →1)
     │   │   ├── index.ts (←3 →3)
-    │   │   ├── scan.ts (←3 →3)
+    │   │   ├── scan.ts (←3 →4)
     │   │   └── types.ts (←2 →0)
     │   ├── signals
     │   │   ├── compute_contract_telemetry.ts (←2 →1)
@@ -226,6 +228,8 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   │   ├── policies.ts (←3 →0)
     │   │   ├── rank.ts (←3 →2)
     │   │   └── types.ts (←1 →0)
+    │   ├── stop
+    │   │   └── stop_signal.ts (←3 →0)
     │   └── utils
     │       └── determinism.ts [HUB] (? GOD-MODULE) (←22 →0)
     ├── test
@@ -236,6 +240,7 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   │   └── a.ts
     │   ├── a.ts
     │   ├── ai_preamble_contract.test.ts (→ ENTRYPOINT) (←0 →1)
+    │   ├── assertion_kind_render_stability.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── budget_profiles_contract.test.ts (→ ENTRYPOINT) (←0 →4)
     │   ├── classification_summary_annotation.test.ts (→ ENTRYPOINT) (←0 →3)
     │   ├── classify_path_kind_contract.test.ts (→ ENTRYPOINT) (←0 →1)
@@ -332,6 +337,7 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── signals_hubs_summary.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── signals_inline_basic.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── signals_thresholds.test.ts (→ ENTRYPOINT) (←0 →1)
+    │   ├── stop_signal_shape.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── summary_classification_test_dir_regression.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── summary_hub_agent_guidance_legend.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── summary_hub_legend.test.ts (→ ENTRYPOINT) (←0 →1)
@@ -350,14 +356,18 @@ Truncated by budget; rerun with --full-signals (+3 more).
     ├── CLI_ERROR_UX.Mapper.report.md (i ORPHAN)
     ├── LAYER_STOP_SEMANTICS_CANON.md (i ORPHAN)
     ├── LAYER_VIOLATION_AGENT_AUDIT.report.md (i ORPHAN)
+    ├── MAPPER.C0.REFACTOR.ASSERTION_KIND.1.report.md (i ORPHAN)
+    ├── MAPPER.C0.REFACTOR.STOP_OBJECT.2.report.md (i ORPHAN)
     ├── otchet.md (i ORPHAN)
     ├── package-lock.json
     ├── package.json
+    ├── PERMISSION_REFERENCE.MCP_ODATA_1C.md (i ORPHAN)
     ├── plan 4.md (i ORPHAN)
     ├── PROJECT_ANAMNESIS.report.md (i ORPHAN)
     ├── project-architecture-mapper-0.8.1.tgz (i ORPHAN)
     ├── README.md
     ├── REPLAY_AGENT_USABILITY.report.md (i ORPHAN)
+    ├── TEXT_TRUST_MICROFIX_IMPLEMENTATION.report.md (i ORPHAN)
     ├── TEXT_TRUST_MICROFIX.report.md (i ORPHAN)
     ├── tmp_generate_impact_md.js (? DYNAMIC-IMPORT) (i ORPHAN)
     ├── tsconfig.json

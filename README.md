@@ -77,7 +77,8 @@ npm test
 - `docs/DEV_GUIDE.md` — архитектура пайплайна, детерминизм, правила для derived views.
 - `docs/RENDER_CONTRACTS.md` — контракт рендера дерева (важно для совместимости вывода).
 - `docs/test_policy_manifest.md` — тестовая политика проекта.
-- `docs/prd_project_architecture_mapper_v_0.9.md` — design decisions / инварианты (PRD/PDR).
+- `docs/prd_project_architecture_mapper_v_0.9.md` — **каноническая спецификация v0.9** (PRD намеренно заменён PDR).
+- `docs/adr_v_2_architecture_xray_evolution.md` — **vNext** (non-canonical для v0.9).
 
 ## Troubleshooting
 Если видите `'mapper' is not recognized`:

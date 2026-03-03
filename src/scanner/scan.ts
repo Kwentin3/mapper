@@ -17,6 +17,7 @@ import {
     ScanResult,
     NodeKind,
 } from './types';
+import { StopError } from '../stop/stop_signal';
 
 /**
  * Recursively scan a directory and build a tree node.
@@ -133,7 +134,13 @@ export async function scanRepo(opts: ScanOptions): Promise<ScanResult> {
     );
 
     if (!root) {
-        throw new Error(`Root directory ${rootDir} could not be scanned (excluded or unreadable).`);
+        throw new StopError({
+            code: 'STOP_SCAN_ROOT_UNREADABLE',
+            reason: `Root directory ${rootDir} could not be scanned (excluded or unreadable).`,
+            blocking: true,
+            severity: 'stop',
+            scope: { kind: 'repo', value: rootDir },
+        });
     }
 
     // Ensure warnings are deterministically ordered (they already are due to push order,

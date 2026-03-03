@@ -6,9 +6,14 @@ import type { ContractSignalMap } from './contract_types.js';
 
 export type SignalKind = 'risk' | 'hint' | 'nav' | 'context';
 
+// Nature of the underlying assertion. Must not affect rendering/order/budgets.
+export type AssertionKind = 'FACT' | 'INFERENCE' | 'POLICY' | 'UNKNOWN';
+
 export interface Signal {
   kind: SignalKind;
   code: string;
+  /** Optional: when missing, treat as UNKNOWN (do not infer). */
+  assertionKind?: AssertionKind;
 }
 
 export interface FileSignals {

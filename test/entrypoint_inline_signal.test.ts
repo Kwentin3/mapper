@@ -23,7 +23,7 @@ describe('entrypoint_inline_signal', () => {
     const result = computeSignals(input);
     const mainFile = result.files.find(f => f.file === 'src/cli/main.ts');
     
-    expect(mainFile?.inline).toContainEqual({ kind: 'nav', code: 'ENTRYPOINT' });
+    expect(mainFile?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'nav', code: 'ENTRYPOINT' })]));
   });
 
   it('should order signals correctly: (i ORPHAN) then (→ ENTRYPOINT)', () => {
@@ -73,6 +73,6 @@ describe('entrypoint_inline_signal', () => {
     const result = computeSignals(input);
     const apiFile = result.files.find(f => f.file === 'src/api.ts');
     
-    expect(apiFile?.inline).toContainEqual({ kind: 'nav', code: 'PUBLIC-API' });
+    expect(apiFile?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'nav', code: 'PUBLIC-API' })]));
   });
 });

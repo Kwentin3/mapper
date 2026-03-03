@@ -33,8 +33,8 @@ describe('signals_inline_basic', () => {
     const fileA = result.files.find(f => f.file === 'src/a.ts');
     const fileB = result.files.find(f => f.file === 'src/b.ts');
 
-  expect(fileA?.inline).toContainEqual({ kind: 'risk', code: 'CYCLE' });
-  expect(fileB?.inline).toContainEqual({ kind: 'risk', code: 'CYCLE' });
+    expect(fileA?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'risk', code: 'CYCLE' })]));
+    expect(fileB?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'risk', code: 'CYCLE' })]));
   });
 
   it('detects PARSE-ERROR hint', () => {
@@ -54,9 +54,9 @@ describe('signals_inline_basic', () => {
       thresholds: { bigLoc: 300, godFanIn: 15, deepPath: 3, barrelExports: 10 },
     };
 
-  const result = computeSignals(input);
-  const file = result.files.find(f => f.file === 'src/error.ts');
-  expect(file?.inline).toContainEqual({ kind: 'hint', code: 'PARSE-ERROR:SYNTAX' });
+    const result = computeSignals(input);
+    const file = result.files.find(f => f.file === 'src/error.ts');
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'PARSE-ERROR:SYNTAX' })]));
   });
 
   it('detects DYNAMIC-IMPORT hint', () => {
@@ -84,7 +84,7 @@ describe('signals_inline_basic', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/dynamic.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'DYNAMIC-IMPORT' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'DYNAMIC-IMPORT' })]));
   });
 
   it('detects ORPHAN context', () => {
@@ -106,7 +106,7 @@ describe('signals_inline_basic', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/orphan.ts');
-    expect(file?.inline).toContainEqual({ kind: 'context', code: 'ORPHAN' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'context', code: 'ORPHAN' })]));
   });
 
   it('detects GOD-MODULE hint when fan-in exceeds threshold', () => {
@@ -133,7 +133,7 @@ describe('signals_inline_basic', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/god.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'GOD-MODULE' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'GOD-MODULE' })]));
   });
 
   it('detects DEEP-PATH hint when depth exceeds threshold', () => {
@@ -155,7 +155,7 @@ describe('signals_inline_basic', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/deep.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'DEEP-PATH' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'DEEP-PATH' })]));
   });
 
   it('detects BARREL-HELL hint when export count exceeds threshold', () => {
@@ -177,7 +177,7 @@ describe('signals_inline_basic', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/barrel.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'BARREL-HELL' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'BARREL-HELL' })]));
   });
 
   it('detects BIG hint when LOC exceeds threshold', () => {
@@ -199,7 +199,7 @@ describe('signals_inline_basic', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/big.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'BIG' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'BIG' })]));
   });
 
   it('respects inlinePerFileMax budget', () => {
@@ -228,6 +228,6 @@ describe('signals_inline_basic', () => {
     // Should have exactly 2 signals (due to budget)
     expect(file?.inline.length).toBe(2);
     // The first two signals added (CYCLE, PARSE-ERROR) should be present
-  expect(file?.inline.map(s => s.code)).toEqual(['CYCLE', 'PARSE-ERROR:SYNTAX']);
+    expect(file?.inline.map(s => s.code)).toEqual(['CYCLE', 'PARSE-ERROR:SYNTAX']);
   });
 });

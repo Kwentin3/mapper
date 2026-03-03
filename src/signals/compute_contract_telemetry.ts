@@ -48,6 +48,7 @@ export function computeContractTelemetry(
     if (!includedBy) {
       contractSignals[file] = {
         status: 'C~',
+        assertionKind: 'FACT',
         evidence: buildEvidence({ inbound: [], outbound: [] }),
       };
       continue;
@@ -57,6 +58,7 @@ export function computeContractTelemetry(
     if (!source || isBinaryContent(source)) {
       contractSignals[file] = {
         status: 'C~',
+        assertionKind: 'FACT',
         evidence: buildEvidence({ inbound: [], outbound: [] }),
       };
       continue;
@@ -75,6 +77,7 @@ export function computeContractTelemetry(
 
     contractSignals[file] = {
       status,
+      assertionKind: 'FACT',
       evidence: buildEvidence({ inbound: foundInbound, outbound: foundOutbound }),
     };
   }

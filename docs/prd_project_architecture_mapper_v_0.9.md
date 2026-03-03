@@ -3,6 +3,12 @@
 > **Purpose:** This document records *design decisions*, *accepted trade-offs*, and *explicitly rejected alternatives* for PRD v0.9.  
 > It exists to prevent architectural drift, repeated debates, and accidental erosion of determinism.
 
+## Canonical Status
+
+- This document is the **canonical specification for v0.9**.
+- For v0.9, **PRD is intentionally replaced by PDR** (PRD and PDR are intentionally merged here).
+- Any content marked **VNext (non-canonical)** is **not** part of v0.9 canon.
+
 ## Context & Motivation
 
 Modern codebases — especially SaaS systems, monorepositories, and integration-heavy platforms —
@@ -305,7 +311,7 @@ Alphabetical within each group.
 - UNKNOWN is the safe default; prefer `[C~]` over false `[C+]` certainty.
 - Layers do not enforce policy; they only annotate evidence for agents.
 - No runtime or behavioral inference is permitted in any layer.
-- Layer-crossing rules are planned (see v0.9.2+), not enforced today.
+- Layer-crossing rules are planned (see v0.9.2+), not enforced today. **VNext (non-canonical)** (see `docs/adr_v_2_architecture_xray_evolution.md`)
 
 ## 10. Adaptive Token Budgeting
 
@@ -360,8 +366,8 @@ Layer violation detection is moved **earlier** in roadmap.
 
 ### Placement
 
-* v0.9.2 — basic directional rules
-* v1.0 — full profile-based semantics
+* v0.9.2 — basic directional rules **VNext (non-canonical)** (see `docs/adr_v_2_architecture_xray_evolution.md`)
+* v1.0 — full profile-based semantics **VNext (non-canonical)** (see `docs/adr_v_2_architecture_xray_evolution.md`)
 
 ### Rationale
 
@@ -374,7 +380,7 @@ Layer violation detection is moved **earlier** in roadmap.
 
 ### Decision
 
-`--as-task-capsule` is **explicitly deferred to v1.0**.
+`--as-task-capsule` is **explicitly deferred to v1.0**. **VNext (non-canonical)** (see `docs/adr_v_2_architecture_xray_evolution.md`)
 
 ### Rationale
 
@@ -394,4 +400,3 @@ This PDR ensures that:
 * LLM agents receive honest, bounded guidance
 
 > **If a future change violates this PDR, it MUST include an explicit amendment.**
-

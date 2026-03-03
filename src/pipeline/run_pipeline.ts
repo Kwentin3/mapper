@@ -12,6 +12,7 @@ import { renderArchitectureMd, type RenderInput, type RenderOptions } from '../r
 import { readFileSync } from 'fs';
 import { join, dirname, relative, resolve as pathResolve } from 'path';
 import { stablePathNormalize } from '../utils/determinism.js';
+import { StopError } from '../stop/stop_signal.js';
 
 /**
  * Options for the entire pipeline.
@@ -216,7 +217,13 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
             }
         }
         if (!existsInGraph) {
-            throw new Error(`Error: --focus-file not found: ${norm}`);
+            throw new StopError({
+                code: 'STOP_FOCUS_FILE_NOT_FOUND',
+                reason: `Error: --focus-file not found: ${norm}`,
+                blocking: true,
+                severity: 'stop',
+                scope: { kind: 'file', value: norm },
+            });
         }
     }
     const renderOptions: RenderOptions = {

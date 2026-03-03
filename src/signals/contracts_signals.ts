@@ -31,22 +31,22 @@ export function computeContractSignals(input: ContractsSignalsInput): Map<string
 
       // Always: CONTRACT: input/output emitted as informational (context)
       if (hasInput) {
-        signals.push({ kind: 'context', code: 'CONTRACT: input' });
+        signals.push({ kind: 'context', code: 'CONTRACT: input', assertionKind: 'FACT' });
       }
       if (hasOutput) {
-        signals.push({ kind: 'context', code: 'CONTRACT: output' });
+        signals.push({ kind: 'context', code: 'CONTRACT: output', assertionKind: 'FACT' });
       }
 
       // Boundary-only signals
       const targeting = getContractTargeting(file);
       if (targeting.isBoundary) {
         if (hasInput && !hasOutput) {
-          signals.push({ kind: 'hint', code: 'INPUT_ONLY_CONTRACT' });
+          signals.push({ kind: 'hint', code: 'INPUT_ONLY_CONTRACT', assertionKind: 'INFERENCE' });
         } else if (!hasInput && hasOutput) {
-          signals.push({ kind: 'hint', code: 'OUTPUT_ONLY_CONTRACT' });
+          signals.push({ kind: 'hint', code: 'OUTPUT_ONLY_CONTRACT', assertionKind: 'INFERENCE' });
         } else if (!hasInput && !hasOutput) {
           // For boundary files with no anchors, emit informational NO_CONTRACT
-          signals.push({ kind: 'context', code: 'NO_CONTRACT' });
+          signals.push({ kind: 'context', code: 'NO_CONTRACT', assertionKind: 'FACT' });
         }
       }
     }

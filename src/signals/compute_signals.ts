@@ -5,7 +5,7 @@
 import type { DependencyGraph } from '../graph/types.js';
 import type { ParseFileResult } from '../parser/types.js';
 import type { SemanticProfileV0 } from '../config/profiles.js';
-import type { Signal, SignalKind, FileSignals, SummaryItem, SignalsResult, SignalBudgets } from './types.js';
+import type { AssertionKind, Signal, SignalKind, FileSignals, SummaryItem, SignalsResult, SignalBudgets } from './types.js';
 import { rankByScore, takeTopN, fanIn, fanOut, rankEntrypoints } from './rank.js';
 import { stableStringCompare } from '../utils/determinism.js';
 import { computeContractSignals } from './contracts_signals.js';
@@ -21,8 +21,8 @@ export interface ComputeSignalsInput {
   thresholds: { bigLoc: number; godFanIn: number; deepPath: number; barrelExports: number };
 }
 
-function createSignal(kind: SignalKind, code: string): Signal {
-  return { kind, code };
+function createSignal(kind: SignalKind, code: string, assertionKind?: AssertionKind): Signal {
+  return assertionKind ? { kind, code, assertionKind } : { kind, code };
 }
 
 /**
@@ -100,47 +100,47 @@ export function computeSignals(input: ComputeSignalsInput): SignalsResult {
 
     // --- Structural Risks (!) ---
     if (isFileInCycle(file, cycles)) {
-      inline.push(createSignal('risk', 'CYCLE'));
+      inline.push(createSignal('risk', 'CYCLE', 'FACT'));
     }
 
     // --- Heuristic Hints (?) ---
     const pe = parseErrorCategory(file, parseResults);
     if (pe) {
-      inline.push(createSignal('hint', `PARSE-ERROR:${pe}`));
+      inline.push(createSignal('hint', `PARSE-ERROR:${pe}`, 'FACT'));
     }
     if (hasDynamicImport(file, parseResults)) {
-      inline.push(createSignal('hint', 'DYNAMIC-IMPORT'));
+      inline.push(createSignal('hint', 'DYNAMIC-IMPORT', 'FACT'));
     }
     // ORPHAN: no incoming edges (fan-in === 0) and not an entrypoint? treat as context
     if (node && fanIn(node) === 0) {
-      inline.push(createSignal('context', 'ORPHAN'));
+      inline.push(createSignal('context', 'ORPHAN', 'FACT'));
     }
     // GOD-MODULE: fan-in exceeds threshold
     if (node && fanIn(node) > godFanIn) {
-      inline.push(createSignal('hint', 'GOD-MODULE'));
+      inline.push(createSignal('hint', 'GOD-MODULE', 'INFERENCE'));
     }
     // DEEP-PATH: depth exceeds threshold
     if (meta.depth > deepPath) {
-      inline.push(createSignal('hint', 'DEEP-PATH'));
+      inline.push(createSignal('hint', 'DEEP-PATH', 'INFERENCE'));
     }
     // BARREL-HELL: export count exceeds threshold
     if (meta.exportCount && meta.exportCount > barrelExports) {
-      inline.push(createSignal('hint', 'BARREL-HELL'));
+      inline.push(createSignal('hint', 'BARREL-HELL', 'INFERENCE'));
     }
     // BIG: LOC meets or exceeds threshold
     if (meta.loc && meta.loc >= bigLoc) {
-      inline.push(createSignal('hint', 'BIG'));
+      inline.push(createSignal('hint', 'BIG', 'INFERENCE'));
     }
 
     // --- Navigation Signals (→) ---
     // For entrypoints (files with fanIn === 0 and fanOut > 0)
     if (node && fanIn(node) === 0 && fanOut(node) > 0) {
-      inline.push(createSignal('nav', 'ENTRYPOINT'));
+      inline.push(createSignal('nav', 'ENTRYPOINT', 'INFERENCE'));
     }
     // For public API files (high fan-in and high export count)
     const exportCnt = meta.exportCount || 0;
     if (node && fanIn(node) > 0 && exportCnt > 0) {
-      inline.push(createSignal('nav', 'PUBLIC-API'));
+      inline.push(createSignal('nav', 'PUBLIC-API', 'INFERENCE'));
     }
 
     // Apply inline per‑file budget

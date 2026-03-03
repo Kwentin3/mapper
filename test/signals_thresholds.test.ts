@@ -27,7 +27,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/small.ts');
-    expect(file?.inline).not.toContainEqual({ kind: 'hint', code: 'BIG' });
+    expect(file?.inline).not.toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'BIG' })]));
   });
 
   it('emits BIG when LOC equals threshold', () => {
@@ -49,7 +49,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/exact.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'BIG' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'BIG' })]));
   });
 
   it('does NOT emit GOD-MODULE when fan‑in equals threshold', () => {
@@ -76,7 +76,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/god.ts');
-    expect(file?.inline).not.toContainEqual({ kind: 'hint', code: 'GOD-MODULE' });
+    expect(file?.inline).not.toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'GOD-MODULE' })]));
   });
 
   it('emits GOD-MODULE when fan‑in exceeds threshold', () => {
@@ -103,7 +103,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/god.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'GOD-MODULE' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'GOD-MODULE' })]));
   });
 
   it('does NOT emit DEEP-PATH when depth equals threshold', () => {
@@ -125,7 +125,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/deep.ts');
-    expect(file?.inline).not.toContainEqual({ kind: 'hint', code: 'DEEP-PATH' });
+    expect(file?.inline).not.toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'DEEP-PATH' })]));
   });
 
   it('emits DEEP-PATH when depth exceeds threshold', () => {
@@ -147,7 +147,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/deep.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'DEEP-PATH' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'DEEP-PATH' })]));
   });
 
   it('does NOT emit BARREL-HELL when export count equals threshold', () => {
@@ -169,7 +169,7 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/barrel.ts');
-    expect(file?.inline).not.toContainEqual({ kind: 'hint', code: 'BARREL-HELL' });
+    expect(file?.inline).not.toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'BARREL-HELL' })]));
   });
 
   it('emits BARREL-HELL when export count exceeds threshold', () => {
@@ -191,6 +191,6 @@ describe('signals_thresholds', () => {
 
     const result = computeSignals(input);
     const file = result.files.find(f => f.file === 'src/barrel.ts');
-    expect(file?.inline).toContainEqual({ kind: 'hint', code: 'BARREL-HELL' });
+    expect(file?.inline).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'hint', code: 'BARREL-HELL' })]));
   });
 });

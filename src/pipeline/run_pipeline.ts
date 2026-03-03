@@ -41,6 +41,23 @@ export interface PipelineOptions {
 export interface PipelineResult {
     markdown: string;
     warnings: string[];
+    signals: SignalsResult;
+}
+
+function computePathDepth(relPath: string): number {
+    const normalized = stablePathNormalize(relPath);
+    if (normalized === '.' || normalized.length === 0) return 0;
+    return Math.max(0, normalized.split('/').length - 1);
+}
+
+function countLoc(source: string): number {
+    if (source.length === 0) return 0;
+    return source.split(/\r?\n/).length;
+}
+
+function countExportsHeuristic(source: string): number {
+    const matches = source.match(/\bexport\s+(?:default\b|\{|\*|const\b|let\b|var\b|function\b|class\b|interface\b|type\b|enum\b|abstract\b)/g);
+    return matches ? matches.length : 0;
 }
 
 /**
@@ -119,12 +136,12 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
             warnings.push(`Could not read file ${file}: ${err instanceof Error ? err.message : String(err)}`);
             continue;
         }
-    const result = parseFile(file, code, parseOptions);
-    // Attach original source text to the parse result for downstream heuristics
-    // (deterministic, read from previously-read file content)
-    (result as any).source = code;
-    parsed.push(result);
-    warnings.push(...result.warnings);
+        const result = parseFile(file, code, parseOptions);
+        // Attach original source text to the parse result for downstream heuristics
+        // (deterministic, read from previously-read file content)
+        (result as any).source = code;
+        parsed.push(result);
+        warnings.push(...result.warnings);
     }
 
     // 4. Resolve specifiers (prepare resolver function for graph building)
@@ -165,11 +182,19 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
     const graph: DependencyGraph = buildDependencyGraph(graphInput);
 
     // 6. Compute signals
-    // Prepare fileMeta (simplified – depth, loc, exportCount not yet computed)
-    // For MVP we can pass empty meta; signals that depend on meta will be omitted.
+    // Build fileMeta from parsed sources for runtime heuristics (BIG, DEEP-PATH, BARREL-HELL, PUBLIC-API).
     const fileMeta: Record<string, { depth: number; loc?: number; exportCount?: number }> = {};
+    const parsedByFile = new Map(parsed.map(result => [result.file, result] as const));
     for (const file of files) {
-        fileMeta[file] = { depth: 0 };
+        const meta: { depth: number; loc?: number; exportCount?: number } = {
+            depth: computePathDepth(file),
+        };
+        const parseResult = parsedByFile.get(file);
+        if (parseResult && typeof parseResult.source === 'string') {
+            meta.loc = countLoc(parseResult.source);
+            meta.exportCount = countExportsHeuristic(parseResult.source);
+        }
+        fileMeta[file] = meta;
     }
 
     const signalsInput: ComputeSignalsInput = {
@@ -247,5 +272,6 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
     return {
         markdown: renderOutput.content,
         warnings: allWarnings,
+        signals,
     };
 }

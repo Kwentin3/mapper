@@ -124,8 +124,9 @@ ${Array.from({ length: 200 }, (_, i) => `console.log(${i});`).join('\n')}
         const noisyLine = treeLines.find(line => line.includes('noisy.ts'));
         expect(noisyLine).toBeDefined();
 
-        // Count signal groups (items in parentheses)
-        const signalRegex = /\(\S+ [^)]+\)/g;
+        // Count only inline signal groups: (! ...), (? ...), (i ...), (→ ...).
+        // Dependency counters like "(←20 →3)" are not signals and must be excluded.
+        const signalRegex = /\((?:!|\?|i|→) [^)]+\)/g;
         const matches = noisyLine?.match(signalRegex) || [];
         const signalCount = matches.length;
 

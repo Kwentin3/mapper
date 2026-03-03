@@ -46,15 +46,22 @@ Agent guidance for [HUB]
 - `src/resolver/index.ts` [PROD] – fan-in is 0, imports others
 - `src/cli/main.ts` [PROD] – fan-in is 0, imports others
 
+### Public API
+- `src/pipeline/run_pipeline.ts` [PROD] – Fan‑in 26, exports 2
+- `src/utils/determinism.ts` [PROD] – Fan‑in 22, exports 4
+- `src/cli/run.ts` [PROD] – Fan‑in 19, exports 1
+- `src/render/render_architecture_md.ts` [PROD] – Fan‑in 13, exports 1
+- `src/render/render_tree.ts` [PROD] – Fan‑in 11, exports 1
+
 ## Graph Hubs (Fan‑in / Fan‑out)
 
 ### Fan‑in Hubs
-- `src/pipeline/run_pipeline.ts` [PROD] [HUB] – Fan‑in 25
+- `src/pipeline/run_pipeline.ts` [PROD] [HUB] – Fan‑in 26
 - `src/utils/determinism.ts` [PROD] [HUB] – Fan‑in 22
-- `src/cli/run.ts` [PROD] [HUB] – Fan‑in 17
+- `src/cli/run.ts` [PROD] [HUB] – Fan‑in 19
 - (tests: 2 moved to bottom)
 - `test/helpers/fixture_builder.ts` [TEST] [HUB] – Fan‑in 25
-- `test/helpers/temp_dirs.ts` [TEST] [HUB] – Fan‑in 21
+- `test/helpers/temp_dirs.ts` [TEST] [HUB] – Fan‑in 25
 
 ### Fan‑out Hubs
 - `src/render/render_architecture_md.ts` [PROD] [HUB] – Fan‑out 7
@@ -91,7 +98,7 @@ Agent guidance for [HUB]
 
 `src/pipeline/run_pipeline.ts`
 - `←` `src/cli/run.ts`, `test/budget_profiles_contract.test.ts`, `test/classification_summary_annotation.test.ts`
-Truncated by budget; rerun with --full-signals (+22 more).
+Truncated by budget; rerun with --full-signals (+23 more).
 - `→` `src/config/load.ts`, `src/stop/stop_signal.ts`, `src/utils/determinism.ts`
 
 `test/helpers/fixture_builder.ts`
@@ -99,19 +106,19 @@ Truncated by budget; rerun with --full-signals (+22 more).
 Truncated by budget; rerun with --full-signals (+22 more).
 - `→` `src/utils/determinism.ts`
 
+`test/helpers/temp_dirs.ts`
+- `←` `test/budget_profiles_contract.test.ts`, `test/classification_summary_annotation.test.ts`, `test/cli_config_custom_file.test.ts`
+Truncated by budget; rerun with --full-signals (+22 more).
+- `→` 
+
 `src/utils/determinism.ts`
 - `←` `src/graph/build_graph.ts`, `src/parser/ast_parser.ts`, `src/parser/regex_fallback.ts`
 Truncated by budget; rerun with --full-signals (+19 more).
 - `→` 
 
-`test/helpers/temp_dirs.ts`
-- `←` `test/budget_profiles_contract.test.ts`, `test/classification_summary_annotation.test.ts`, `test/cli_invalid_path_flag.test.ts`
-Truncated by budget; rerun with --full-signals (+18 more).
-- `→` 
-
 `src/cli/run.ts`
 - `←` `src/cli/index.ts`, `test/budget_profiles_contract.test.ts`, `test/cli_args_contract.test.ts`
-Truncated by budget; rerun with --full-signals (+14 more).
+Truncated by budget; rerun with --full-signals (+16 more).
 - `→` `src/pipeline/run_pipeline.ts`
 
 `src/render/render_architecture_md.ts`
@@ -149,14 +156,14 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── adr
     │   │   └── ADR-000X-tree-rendering-contract.md
     │   ├── old PRD
-    │   │   ├── prd_project_architecture_mapper_v_0.8.md
-    │   │   ├── project_mapper_prd_v0.2.md
-    │   │   ├── project_mapper_prd_v0.3.md
-    │   │   ├── project_mapper_prd_v0.4.md
-    │   │   ├── project_mapper_prd_v0.5.md
-    │   │   ├── project_mapper_prd_v0.6.md
-    │   │   ├── project_mapper_prd_v0.7.md
-    │   │   └── project_mapper_prd.md
+    │   │   ├── prd_project_architecture_mapper_v_0.8.md (? BIG)
+    │   │   ├── project_mapper_prd_v0.2.md (? BIG)
+    │   │   ├── project_mapper_prd_v0.3.md (? BIG)
+    │   │   ├── project_mapper_prd_v0.4.md (? BIG)
+    │   │   ├── project_mapper_prd_v0.5.md (? BIG)
+    │   │   ├── project_mapper_prd_v0.6.md (? BIG)
+    │   │   ├── project_mapper_prd_v0.7.md (? BIG)
+    │   │   └── project_mapper_prd.md (? BIG)
     │   ├── adr_v_2_architecture_xray_evolution.md
     │   ├── AGENT_MANIFEST.md
     │   ├── agent-interpretation.md
@@ -166,7 +173,7 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── deploy.md
     │   ├── DEV_GUIDE.md
     │   ├── PR_DESCRIPTION.md
-    │   ├── prd_project_architecture_mapper_v_0.9.md
+    │   ├── prd_project_architecture_mapper_v_0.9.md (? BIG)
     │   ├── RENDER_CONTRACTS.md
     │   └── test_policy_manifest.md
     ├── out
@@ -177,65 +184,65 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── cli
     │   │   ├── index.ts (←1 →1)
     │   │   ├── main.ts (→ ENTRYPOINT) (←0 →1)
-    │   │   └── run.ts [HUB] (? GOD-MODULE) (←17 →1)
+    │   │   └── run.ts [HUB] (? GOD-MODULE) (? BIG) (→ PUBLIC-API) (←19 →1)
     │   ├── config
-    │   │   ├── load.ts (i CONTRACT: input) (←2 →1)
-    │   │   └── profiles.ts (←3 →0)
+    │   │   ├── load.ts (i CONTRACT: input) (→ PUBLIC-API) (←2 →1)
+    │   │   └── profiles.ts (→ PUBLIC-API) (←3 →0)
     │   ├── contracts
-    │   │   ├── boundary_targeting.ts (←1 →0)
-    │   │   ├── contract_targeting.ts (←2 →1)
-    │   │   └── scan_contract_anchors.ts (i CONTRACT: input) (i CONTRACT: output) (←2 →0)
+    │   │   ├── boundary_targeting.ts (→ PUBLIC-API) (←1 →0)
+    │   │   ├── contract_targeting.ts (→ PUBLIC-API) (←2 →1)
+    │   │   └── scan_contract_anchors.ts (i CONTRACT: input) (i CONTRACT: output) (→ PUBLIC-API) (←2 →0)
     │   ├── graph
-    │   │   ├── build_graph.ts (←8 →1)
-    │   │   ├── index.ts (←3 →2)
-    │   │   └── types.ts (←1 →0)
+    │   │   ├── build_graph.ts (→ PUBLIC-API) (←8 →1)
+    │   │   ├── index.ts (→ PUBLIC-API) (←3 →2)
+    │   │   └── types.ts (→ PUBLIC-API) (←1 →0)
     │   ├── parser
-    │   │   ├── ast_parser.ts (←4 →1)
-    │   │   ├── index.ts (←3 →4)
-    │   │   ├── parse_file.ts (←3 →2)
-    │   │   ├── regex_fallback.ts (←3 →1)
-    │   │   └── types.ts (←1 →0)
+    │   │   ├── ast_parser.ts (→ PUBLIC-API) (←4 →1)
+    │   │   ├── index.ts (→ PUBLIC-API) (←3 →4)
+    │   │   ├── parse_file.ts (→ PUBLIC-API) (←3 →2)
+    │   │   ├── regex_fallback.ts (→ PUBLIC-API) (←3 →1)
+    │   │   └── types.ts (→ PUBLIC-API) (←1 →0)
     │   ├── pipeline
-    │   │   └── run_pipeline.ts [HUB] (? GOD-MODULE) (←25 →3)
+    │   │   └── run_pipeline.ts [HUB] (? GOD-MODULE) (→ PUBLIC-API) (←26 →3)
     │   ├── render
-    │   │   ├── budgets.ts (←1 →0)
-    │   │   ├── format.ts (←4 →1)
-    │   │   ├── index.ts [HUB] (←5 →6)
-    │   │   ├── preamble.ts (←5 →0)
-    │   │   ├── render_architecture_md.ts [HUB] (←13 →7)
-    │   │   ├── render_summary.ts (←4 →1)
-    │   │   ├── render_tree.ts (←10 →3)
-    │   │   ├── smart_collapse.ts (←3 →0)
-    │   │   └── types.ts (←1 →0)
+    │   │   ├── budgets.ts (→ PUBLIC-API) (←1 →0)
+    │   │   ├── format.ts (→ PUBLIC-API) (←4 →1)
+    │   │   ├── index.ts [HUB] (→ PUBLIC-API) (←5 →6)
+    │   │   ├── preamble.ts (→ PUBLIC-API) (←5 →0)
+    │   │   ├── render_architecture_md.ts [HUB] (? BIG) (→ PUBLIC-API) (←13 →7)
+    │   │   ├── render_summary.ts (→ PUBLIC-API) (←4 →1)
+    │   │   ├── render_tree.ts (? BIG) (→ PUBLIC-API) (←11 →3)
+    │   │   ├── smart_collapse.ts (→ PUBLIC-API) (←3 →0)
+    │   │   └── types.ts (→ PUBLIC-API) (←1 →0)
     │   ├── resolver
     │   │   ├── index.ts (→ ENTRYPOINT) (←0 →4)
-    │   │   ├── read_package_json.ts (i CONTRACT: input) (←2 →0)
-    │   │   ├── read_tsconfig.ts (i CONTRACT: input) (←2 →0)
-    │   │   ├── resolve_specifier.ts (←9 →3)
-    │   │   └── types.ts (←1 →0)
+    │   │   ├── read_package_json.ts (i CONTRACT: input) (→ PUBLIC-API) (←3 →0)
+    │   │   ├── read_tsconfig.ts (i CONTRACT: input) (→ PUBLIC-API) (←3 →0)
+    │   │   ├── resolve_specifier.ts (? BIG) (→ PUBLIC-API) (←9 →3)
+    │   │   └── types.ts (→ PUBLIC-API) (←1 →0)
     │   ├── scanner
-    │   │   ├── excludes.ts (←2 →1)
-    │   │   ├── index.ts (←3 →3)
+    │   │   ├── excludes.ts (→ PUBLIC-API) (←2 →1)
+    │   │   ├── index.ts (→ PUBLIC-API) (←3 →3)
     │   │   ├── scan.ts (←3 →4)
-    │   │   └── types.ts (←2 →0)
+    │   │   └── types.ts (→ PUBLIC-API) (←2 →0)
     │   ├── signals
-    │   │   ├── compute_contract_telemetry.ts (←2 →1)
-    │   │   ├── compute_signals.ts (←7 →4)
-    │   │   ├── contract_types.ts (←1 →0)
-    │   │   ├── contracts_signals.ts (←1 →2)
-    │   │   ├── filter.ts (←4 →1)
-    │   │   ├── index.ts [HUB] (←3 →6)
-    │   │   ├── policies.ts (←3 →0)
-    │   │   ├── rank.ts (←3 →2)
-    │   │   └── types.ts (←1 →0)
+    │   │   ├── compute_contract_telemetry.ts (→ PUBLIC-API) (←2 →1)
+    │   │   ├── compute_signals.ts (→ PUBLIC-API) (←7 →4)
+    │   │   ├── contract_types.ts (→ PUBLIC-API) (←1 →0)
+    │   │   ├── contracts_signals.ts (→ PUBLIC-API) (←1 →2)
+    │   │   ├── filter.ts (→ PUBLIC-API) (←4 →1)
+    │   │   ├── index.ts [HUB] (→ PUBLIC-API) (←3 →6)
+    │   │   ├── policies.ts (→ PUBLIC-API) (←3 →0)
+    │   │   ├── rank.ts (→ PUBLIC-API) (←3 →2)
+    │   │   └── types.ts (→ PUBLIC-API) (←1 →0)
     │   ├── stop
-    │   │   └── stop_signal.ts (←3 →0)
+    │   │   └── stop_signal.ts (→ PUBLIC-API) (←3 →0)
     │   └── utils
-    │       └── determinism.ts [HUB] (? GOD-MODULE) (←22 →0)
+    │       └── determinism.ts [HUB] (? GOD-MODULE) (→ PUBLIC-API) (←22 →0)
     ├── test
     │   ├── helpers
-    │   │   ├── fixture_builder.ts [HUB] (? DYNAMIC-IMPORT) (? GOD-MODULE) (←25 →1)
-    │   │   └── temp_dirs.ts [HUB] (? GOD-MODULE) (←21 →0)
+    │   │   ├── fixture_builder.ts [HUB] (? DYNAMIC-IMPORT) (? GOD-MODULE) (→ PUBLIC-API) (←25 →1)
+    │   │   └── temp_dirs.ts [HUB] (? GOD-MODULE) (→ PUBLIC-API) (←25 →0)
     │   ├── src
     │   │   └── a.ts
     │   ├── a.ts
@@ -246,15 +253,17 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── classify_path_kind_contract.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_args_contract.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_budget_flag.test.ts
+    │   ├── cli_config_custom_file.test.ts (→ ENTRYPOINT) (←0 →2)
     │   ├── cli_determinism.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_flags_focus_depth.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_focus_depth_truth.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_generate_file.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_golden_fixture_repo.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_invalid_path_flag.test.ts (→ ENTRYPOINT) (←0 →2)
-    │   ├── cli_noise_control.test.ts (→ ENTRYPOINT) (←0 →1)
+    │   ├── cli_noise_control.test.ts (? BARREL-HELL) (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_positional_out.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_selfscan_outdir_determinism.test.ts (→ ENTRYPOINT) (←0 →1)
+    │   ├── cli_show_temp_flag.test.ts (→ ENTRYPOINT) (←0 →2)
     │   ├── cli_silent_io_contract.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_smoke.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── cli_tsconfig_alias_priority.test.ts (→ ENTRYPOINT) (←0 →1)
@@ -306,12 +315,14 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── parser_dynamic_import.test.ts (→ ENTRYPOINT) (←0 →2)
     │   ├── parser_parse_error.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── pipeline_e2e_basic.test.ts (→ ENTRYPOINT) (←0 →1)
+    │   ├── pipeline_filemeta_signals_integration.test.ts (→ ENTRYPOINT) (←0 →2)
     │   ├── policy_collapse_temp.test.ts (→ ENTRYPOINT) (←0 →3)
     │   ├── preamble_interpretation_contract.test.ts (→ ENTRYPOINT) (←0 →3)
     │   ├── render_collapse_indicators.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── render_contract_telemetry_render.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── render_depth_stub_risk.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── render_determinism.test.ts (i CONTRACT: input) (→ ENTRYPOINT) (←0 →1)
+    │   ├── render_focus_filtering_contract.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── render_focus_not_found.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── render_generation_metadata_contract.test.ts (→ ENTRYPOINT) (←0 →3)
     │   ├── render_header_blocks.test.ts (→ ENTRYPOINT) (←0 →1)
@@ -322,6 +333,7 @@ Truncated by budget; rerun with --full-signals (+3 more).
     │   ├── render_tree_basic.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── render_tree_hub_tag.test.ts (→ ENTRYPOINT) (←0 →2)
     │   ├── resolver_circular_alias.test.ts (→ ENTRYPOINT) (←0 →1)
+    │   ├── resolver_config_cache.test.ts (→ ENTRYPOINT) (←0 →3)
     │   ├── resolver_determinism.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── resolver_external_default.test.ts (→ ENTRYPOINT) (←0 →1)
     │   ├── resolver_js_extension_fallback.test.ts (→ ENTRYPOINT) (←0 →1)
@@ -350,8 +362,8 @@ Truncated by budget; rerun with --full-signals (+3 more).
     ├── AGENT_NAVIGATION_DOCTRINE.md (i ORPHAN)
     ├── AGENT_TEXT_STRICTNESS_CANON.md (i ORPHAN)
     ├── AGENT_TRUST_DRIFT_AUDIT.report.md (i ORPHAN)
-    ├── ARCHITECTURE_CONTRACT_COVERAGE.md (i ORPHAN)
-    ├── ARCHITECTURE.md (i ORPHAN)
+    ├── ARCHITECTURE_CONTRACT_COVERAGE.md (? BIG) (i ORPHAN)
+    ├── ARCHITECTURE.md (? BIG) (i ORPHAN)
     ├── CHANGELOG.md
     ├── CLI_ERROR_UX.Mapper.report.md (i ORPHAN)
     ├── LAYER_STOP_SEMANTICS_CANON.md (i ORPHAN)
@@ -359,7 +371,7 @@ Truncated by budget; rerun with --full-signals (+3 more).
     ├── MAPPER.C0.REFACTOR.ASSERTION_KIND.1.report.md (i ORPHAN)
     ├── MAPPER.C0.REFACTOR.STOP_OBJECT.2.report.md (i ORPHAN)
     ├── otchet.md (i ORPHAN)
-    ├── package-lock.json
+    ├── package-lock.json (? BIG)
     ├── package.json
     ├── PERMISSION_REFERENCE.MCP_ODATA_1C.md (i ORPHAN)
     ├── plan 4.md (i ORPHAN)

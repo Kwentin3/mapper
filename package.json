@@ -1,6 +1,6 @@
 {
   "name": "@kwentin3/mapper",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Project Architecture Mapper CLI tool",
   "main": "dist/cli/index.js",
   "bin": {

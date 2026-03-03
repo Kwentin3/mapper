@@ -166,12 +166,22 @@ export function parseWithAstInfo(
  */
 function isImportTypeOnly(node: ts.ImportDeclaration): boolean {
   // `import type ...`
-  if (node.importClause?.isTypeOnly) return true
-
-  // `import { type X }`
   const clause = node.importClause
-  if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
-    return clause.namedBindings.elements.some((elem) => elem.isTypeOnly)
+  if (!clause) return false
+  if (clause.isTypeOnly) return true
+
+  // Any default binding implies a runtime value import.
+  if (clause.name) return false
+
+  if (!clause.namedBindings) return false
+  // Namespace binding without `import type` is a runtime value import.
+  if (ts.isNamespaceImport(clause.namedBindings)) return false
+
+  // Named imports are type-only only when every imported specifier is marked `type`.
+  if (ts.isNamedImports(clause.namedBindings)) {
+    const elements = clause.namedBindings.elements
+    if (elements.length === 0) return false
+    return elements.every((elem) => elem.isTypeOnly)
   }
 
   return false

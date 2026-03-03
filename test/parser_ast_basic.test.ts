@@ -94,6 +94,20 @@ describe('AST parser basic extraction', () => {
     ])
   })
 
+  test('does not mark mixed named imports as type-only', () => {
+    const code = `import { Foo, type Bar } from './mixed'`
+    const edges = parseWithAst(code, 'test.ts', defaultOpts)
+    expect(edges).not.toBeNull()
+    expect(edges).toEqual([
+      {
+        from: 'test.ts',
+        specifier: './mixed',
+        kind: 'import',
+        isTypeOnly: false,
+      },
+    ])
+  })
+
   test('multiple imports produce deterministic ordering', () => {
     const code = `
       import './z'

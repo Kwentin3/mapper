@@ -29,6 +29,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
             config: { type: 'string' },
             profile: { type: 'string' },
             format: { type: 'string' },
+            'strict-flags': { type: 'boolean' },
             focus: { type: 'string' },
             depth: { type: 'string' },
             'full-signals': { type: 'boolean' },
@@ -46,11 +47,24 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
     });
 
     // Detect unknown short flags (single dash with unknown characters)
-    const knownOpts = new Set(['help', 'config', 'profile', 'format', 'focus', 'focus-file', 'depth', 'full-signals', 'show-orphans', 'show-temp', 'budget', 'out', 'version', 'h', 'v']);
+    const knownOpts = new Set(['help', 'config', 'profile', 'format', 'strict-flags', 'focus', 'focus-file', 'depth', 'full-signals', 'show-orphans', 'show-temp', 'budget', 'out', 'version', 'h', 'v']);
 
     // allow focus-depth as known
     knownOpts.add('focus-depth');
     const unknownFlags = Object.keys(values).filter(k => !knownOpts.has(k));
+    if (values['strict-flags'] === true && unknownFlags.length > 0) {
+        const strictUnknown = unknownFlags
+            .map(flag => (flag.length === 1 ? `-${flag}` : `--${flag}`))
+            .sort()
+            .join(', ');
+        error(`Error: unknown option(s): ${strictUnknown}. Use --help.`);
+        return stopReturn({
+            code: 'STOP_UNKNOWN_OPTION',
+            reason: `Error: unknown option(s): ${strictUnknown}. Use --help.`,
+            blocking: true,
+            severity: 'stop',
+        }, 1);
+    }
     if (unknownFlags.length > 0) {
         // Find the first argument that starts with '-' and is not a known option
         for (const arg of argv) {
@@ -309,6 +323,7 @@ Options:
   --config <file>     Use a custom configuration file
   --profile <name>    Use a built‑in profile (default, fsd, monorepo)
   --format <name>     Output format: markdown, json
+  --strict-flags      Fail on unknown flags (agent-safe mode)
     --budget <name>     View budget profile: small, default, large
   --focus <path>      Focus the tree on a specific subdirectory
         --focus-file <path> Focus a single repo-relative file for a deep‑dive (use POSIX / separators)

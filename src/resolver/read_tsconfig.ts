@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, statSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -83,6 +83,23 @@ function parseJsonTolerant(text: string): any {
   return JSON.parse(cleaned);
 }
 
+type AliasesCacheEntry = {
+  mtimeMs: number;
+  size: number;
+  value: Record<string, string[]>;
+};
+
+const aliasesCache = new Map<string, AliasesCacheEntry>();
+
+function readFileSignature(path: string): { mtimeMs: number; size: number } | null {
+  try {
+    const st = statSync(path);
+    return { mtimeMs: st.mtimeMs, size: st.size };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Load path aliases from a tsconfig.json file.
  *
@@ -92,7 +109,19 @@ function parseJsonTolerant(text: string): any {
  */
 export function loadTsconfigAliases(tsconfigPath: string): Record<string, string[]> {
   if (!existsSync(tsconfigPath)) {
+    aliasesCache.delete(tsconfigPath);
     return {};
+  }
+
+  const signature = readFileSignature(tsconfigPath);
+  if (!signature) {
+    aliasesCache.delete(tsconfigPath);
+    return {};
+  }
+
+  const cached = aliasesCache.get(tsconfigPath);
+  if (cached && cached.mtimeMs === signature.mtimeMs && cached.size === signature.size) {
+    return cached.value;
   }
 
   try {
@@ -109,11 +138,14 @@ export function loadTsconfigAliases(tsconfigPath: string): Record<string, string
           result[pattern] = [substitutions];
         }
       }
+      aliasesCache.set(tsconfigPath, { ...signature, value: result });
       return result;
     }
+    aliasesCache.set(tsconfigPath, { ...signature, value: {} });
     return {};
   } catch {
     // If any error occurs (parse, read, etc.) return empty aliases.
+    aliasesCache.set(tsconfigPath, { ...signature, value: {} });
     return {};
   }
 }

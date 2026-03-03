@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, statSync } from 'fs';
 
 /**
  * Strip JavaScript‑style comments (// and /* *\/) from a JSON‑like string.
@@ -74,6 +74,23 @@ function extractSubstitutions(obj: any): string[] {
   return [];
 }
 
+type ImportsCacheEntry = {
+  mtimeMs: number;
+  size: number;
+  value: Record<string, string[]>;
+};
+
+const importsCache = new Map<string, ImportsCacheEntry>();
+
+function readFileSignature(path: string): { mtimeMs: number; size: number } | null {
+  try {
+    const st = statSync(path);
+    return { mtimeMs: st.mtimeMs, size: st.size };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Load import mappings from a package.json file.
  *
@@ -83,7 +100,19 @@ function extractSubstitutions(obj: any): string[] {
  */
 export function loadPackageImports(packageJsonPath: string): Record<string, string[]> {
   if (!existsSync(packageJsonPath)) {
+    importsCache.delete(packageJsonPath);
     return {};
+  }
+
+  const signature = readFileSignature(packageJsonPath);
+  if (!signature) {
+    importsCache.delete(packageJsonPath);
+    return {};
+  }
+
+  const cached = importsCache.get(packageJsonPath);
+  if (cached && cached.mtimeMs === signature.mtimeMs && cached.size === signature.size) {
+    return cached.value;
   }
 
   try {
@@ -118,9 +147,11 @@ export function loadPackageImports(packageJsonPath: string): Record<string, stri
       }
     }
 
+    importsCache.set(packageJsonPath, { ...signature, value: result });
     return result;
   } catch {
     // If any error occurs, return empty map.
+    importsCache.set(packageJsonPath, { ...signature, value: {} });
     return {};
   }
 }

@@ -28,6 +28,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
             help: { type: 'boolean', short: 'h' },
             config: { type: 'string' },
             profile: { type: 'string' },
+            format: { type: 'string' },
             focus: { type: 'string' },
             depth: { type: 'string' },
             'full-signals': { type: 'boolean' },
@@ -45,7 +46,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
     });
 
     // Detect unknown short flags (single dash with unknown characters)
-    const knownOpts = new Set(['help', 'config', 'profile', 'focus', 'focus-file', 'depth', 'full-signals', 'show-orphans', 'show-temp', 'budget', 'out', 'version', 'h', 'v']);
+    const knownOpts = new Set(['help', 'config', 'profile', 'format', 'focus', 'focus-file', 'depth', 'full-signals', 'show-orphans', 'show-temp', 'budget', 'out', 'version', 'h', 'v']);
 
     // allow focus-depth as known
     knownOpts.add('focus-depth');
@@ -181,13 +182,26 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         configPath = resolve(values.config);
     }
 
+    const format = typeof values.format === 'string' ? values.format : 'markdown';
+    if (format !== 'markdown' && format !== 'json') {
+        error(`Error: invalid --format value: ${format}`);
+        return stopReturn({
+            code: 'STOP_INVALID_FORMAT',
+            reason: `Error: invalid --format value: ${format}`,
+            blocking: true,
+            severity: 'stop',
+        }, 1);
+    }
+    const defaultOutFile = format === 'json' ? 'ARCHITECTURE.json' : 'ARCHITECTURE.md';
+
     try {
         // Validate --out target early to provide deterministic, user-friendly
         // error messages rather than leaking internal IO errors. We validate
         // relative to the resolved `rootDir` so tests and CI remain hermetic
         // and deterministic.
-        if (typeof values.out === 'string') {
-            const candidateOut = resolve(rootDir, values.out);
+        const outFile = typeof values.out === 'string' ? values.out : defaultOutFile;
+        if (typeof outFile === 'string') {
+            const candidateOut = resolve(rootDir, outFile);
             if (existsSync(candidateOut) && statSync(candidateOut).isDirectory()) {
                 error('Error: --out must be a file path, not a directory.');
                 return stopReturn({
@@ -195,7 +209,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
                     reason: 'Error: --out must be a file path, not a directory.',
                     blocking: true,
                     severity: 'stop',
-                    scope: { kind: 'path', value: values.out },
+                    scope: { kind: 'path', value: outFile },
                 }, 1);
             }
             const parent = dirname(candidateOut);
@@ -206,7 +220,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
                     reason: 'Error: output parent directory does not exist.',
                     blocking: true,
                     severity: 'stop',
-                    scope: { kind: 'path', value: values.out },
+                    scope: { kind: 'path', value: outFile },
                 }, 1);
             }
         }
@@ -241,8 +255,11 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         });
 
         // Write markdown to file
-        const outPath = resolve(rootDir, typeof values.out === 'string' ? values.out : 'ARCHITECTURE.md');
-        writeFileSync(outPath, result.markdown, 'utf-8');
+        const outPath = resolve(rootDir, typeof values.out === 'string' ? values.out : defaultOutFile);
+        const content = format === 'json'
+            ? JSON.stringify(result.snapshot, null, 2) + '\n'
+            : result.markdown;
+        writeFileSync(outPath, content, 'utf-8');
 
         // Print summary
         log(`✅ Architecture map written to ${outPath}`);
@@ -291,6 +308,7 @@ Options:
   -v, --version       Show version
   --config <file>     Use a custom configuration file
   --profile <name>    Use a built‑in profile (default, fsd, monorepo)
+  --format <name>     Output format: markdown, json
     --budget <name>     View budget profile: small, default, large
   --focus <path>      Focus the tree on a specific subdirectory
         --focus-file <path> Focus a single repo-relative file for a deep‑dive (use POSIX / separators)

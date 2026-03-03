@@ -9,6 +9,8 @@ import { resolveSpecifier, type ResolverOptions, type ResolvedTarget } from '../
 import { buildDependencyGraph, type BuildGraphInput, type DependencyGraph } from '../graph/index.js';
 import { computeSignals, type ComputeSignalsInput, type SignalsResult } from '../signals/index.js';
 import { renderArchitectureMd, type RenderInput, type RenderOptions } from '../render/index.js';
+import { buildAgentSnapshot } from '../artifact/build_snapshot.js';
+import type { AgentSnapshotV1 } from '../artifact/types.js';
 import { readFileSync } from 'fs';
 import { join, dirname, relative, resolve as pathResolve } from 'path';
 import { stablePathNormalize } from '../utils/determinism.js';
@@ -42,6 +44,7 @@ export interface PipelineResult {
     markdown: string;
     warnings: string[];
     signals: SignalsResult;
+    snapshot: AgentSnapshotV1;
 }
 
 function computePathDepth(relPath: string): number {
@@ -268,10 +271,20 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
 
     // Collect all warnings (deduplicate? keep as is)
     const allWarnings = Array.from(new Set(warnings)).sort();
+    const snapshot = buildAgentSnapshot({
+        opts,
+        profile,
+        files,
+        fileMeta,
+        signals,
+        graph,
+        warnings: allWarnings,
+    });
 
     return {
         markdown: renderOutput.content,
         warnings: allWarnings,
         signals,
+        snapshot,
     };
 }

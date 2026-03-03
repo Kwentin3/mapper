@@ -65,6 +65,23 @@ node dist/cli/main.js .
 npm test
 ```
 
+## Публикация в npm
+- Автопаблиш настроен workflow: `.github/workflows/npm-publish.yml`.
+- Публикация происходит по git-тегу `v*` (например `v0.1.4`) или вручную через `workflow_dispatch`.
+- Перед публикацией workflow делает `npm ci`, `npm test`, `npm run build`.
+
+Рекомендуемый релизный поток:
+
+```powershell
+npm version patch
+git push origin main
+git push origin --tags
+```
+
+Настройка авторизации в npm (один из вариантов):
+- Trusted Publishing (рекомендуется): добавьте GitHub-репозиторий и workflow в npm package settings.
+- Либо секрет `NPM_TOKEN` в GitHub repository secrets (fallback поддерживается в workflow).
+
 ## Как читать `ARCHITECTURE.md`
 - AI Preamble: правила интерпретации и приоритет сигналов.
 - Budgeting: если список обрезан, это явно помечается; для полного аудита используйте `--full-signals`.

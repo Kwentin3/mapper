@@ -24,6 +24,19 @@ export interface UserConfig {
     semanticProfile?: Partial<SemanticProfileV0>;
 }
 
+function loadUserConfigFile(filePath: string): UserConfig | null {
+    if (!existsSync(filePath)) {
+        return null;
+    }
+    try {
+        const content = readFileSync(filePath, 'utf-8');
+        return JSON.parse(content) as UserConfig;
+    } catch {
+        // If the file is malformed, ignore it (fallback to defaults).
+        return null;
+    }
+}
+
 function normalizePosixPatterns(values: string[]): string[] {
     return values
         .map(value => value.replace(/\\/g, '/'))
@@ -72,17 +85,14 @@ export function loadUserConfig(dir: string = process.cwd()): UserConfig | null {
     for (const filename of CONFIG_FILENAMES) {
         const filePath = join(dir, filename);
         if (existsSync(filePath)) {
-            try {
-                const content = readFileSync(filePath, 'utf-8');
-                const parsed = JSON.parse(content) as UserConfig;
-                return parsed;
-            } catch {
-                // If the file is malformed, ignore it (fallback to default)
-                return null;
-            }
+            return loadUserConfigFile(filePath);
         }
     }
     return null;
+}
+
+export function loadUserConfigFromPath(filePath: string): UserConfig | null {
+    return loadUserConfigFile(filePath);
 }
 
 /**
@@ -124,17 +134,21 @@ export function mergeConfigIntoProfile(
 export function loadEffectiveProfile(options: {
     /** Explicit profile ID from CLI `--profile` */
     profile?: string;
+    /** Explicit config file path from CLI `--config` */
+    configPath?: string;
     /** Directory to look for config files (defaults to cwd) */
     configDir?: string;
 }): Profile {
-    const { profile: cliProfile, configDir = process.cwd() } = options;
+    const { profile: cliProfile, configPath, configDir = process.cwd() } = options;
+    const userConfig = configPath
+        ? loadUserConfigFromPath(configPath)
+        : loadUserConfig(configDir);
 
     // 1. Determine base profile
     let base: Profile;
     if (cliProfile) {
         base = getBuiltInProfile(cliProfile);
     } else {
-        const userConfig = loadUserConfig(configDir);
         if (userConfig?.profile) {
             base = getBuiltInProfile(userConfig.profile);
         } else {
@@ -143,7 +157,6 @@ export function loadEffectiveProfile(options: {
     }
 
     // 2. Merge any config file overrides (if a config file exists)
-    const userConfig = loadUserConfig(configDir);
     if (userConfig) {
         return mergeConfigIntoProfile(base, userConfig);
     }

@@ -175,11 +175,10 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
         focusDepth = parsed;
     }
 
-    // Determine config directory (if --config points to a file, use its parent directory)
-    let configDir: string | undefined = undefined;
+    // Explicit config file path (used only when --config is provided)
+    let configPath: string | undefined = undefined;
     if (typeof values.config === 'string') {
-        // Assume it's a file path; use its directory
-        configDir = dirname(resolve(values.config));
+        configPath = resolve(values.config);
     }
 
     try {
@@ -228,7 +227,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
 
         const result = await runPipeline({
             rootDir,
-            configPath: configDir,
+            configPath,
             profileName: typeof values.profile === 'string' ? values.profile : undefined,
             focus: typeof values.focus === 'string' ? values.focus : undefined,
             focusFile: typeof values['focus-file'] === 'string' ? values['focus-file'] : undefined,
@@ -236,6 +235,7 @@ export async function run(argv: string[], io?: Partial<CliIO>): Promise<{ exitCo
             depth,
             fullSignals: values['full-signals'] === true,
             showOrphans: values['show-orphans'] === true,
+            showTemp: values['show-temp'] === true,
             outFile: typeof values.out === 'string' ? values.out : undefined,
             budget: typeof values.budget === 'string' ? (values.budget as 'small' | 'default' | 'large') : undefined,
         });

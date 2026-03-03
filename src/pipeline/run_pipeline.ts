@@ -63,7 +63,8 @@ export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult
     // 1. Load effective profile
     const profile = loadEffectiveProfile({
         profile: opts.profileName,
-        configDir: opts.configPath ? undefined : opts.rootDir,
+        configPath: opts.configPath,
+        configDir: opts.rootDir,
     });
 
     // 2. Scan repository

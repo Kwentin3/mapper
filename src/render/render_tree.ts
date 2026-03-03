@@ -441,22 +441,19 @@ function renderTreeNode(
   return lines;
 }
 
-/**
- * Find a node by its relative path (DFS). Returns null if not found.
- */
-function findNodeByPath(
+function findPathToNode(
   node: DirNode | FileNode,
-  targetPath: string
-): DirNode | FileNode | null {
+  targetPath: string,
+  path: Array<DirNode | FileNode> = []
+): Array<DirNode | FileNode> | null {
+  const nextPath = path.concat([node]);
   if (node.relPath === targetPath) {
-    return node;
+    return nextPath;
   }
   if (node.kind === 'dir') {
     for (const child of node.children) {
-      const found = findNodeByPath(child, targetPath);
-      if (found) {
-        return found;
-      }
+      const found = findPathToNode(child, targetPath, nextPath);
+      if (found) return found;
     }
   }
   return null;
@@ -474,27 +471,75 @@ function filterTreeByFocus(
   if (focusPath === '') {
     return root;
   }
-  // Check if the focused node exists
-  const focused = findNodeByPath(root, focusPath);
-  if (!focused) {
+  const path = findPathToNode(root, focusPath);
+  if (!path || path.length === 0) {
     return null;
   }
-  // TODO: actually filter the tree (Step 7 of MVP v0.8)
-  // For now, return the whole tree.
-  return root;
-}
 
-/**
- * Apply depth limit by stubbing nodes beyond the limit that contain risks.
- */
-function applyDepthStub(
-  root: DirNode,
-  signals: FileSignals[],
-  depthLimit: number
-): DirNode {
-  // TODO: implement depth stubbing (Step 7 of MVP v0.8)
-  // For now, return the tree unchanged.
-  return root;
+  const focusNode = path[path.length - 1];
+  const focusParentPath = path.length > 1 ? path[path.length - 2].relPath : '';
+
+  const nextOnPath = new Map<string, string>();
+  for (let i = 0; i < path.length - 1; i++) {
+    nextOnPath.set(path[i].relPath, path[i + 1].relPath);
+  }
+
+  const cloneShallow = (node: DirNode | FileNode): DirNode | FileNode => {
+    if (node.kind === 'file') return { ...node };
+    return { ...node, children: [] };
+  };
+
+  const buildFocusedSubtree = (node: DirNode | FileNode): DirNode | FileNode => {
+    if (node.kind === 'file') return { ...node };
+    return {
+      ...node,
+      children: node.children.map(child => cloneShallow(child)),
+    };
+  };
+
+  const build = (node: DirNode | FileNode): DirNode | FileNode | null => {
+    if (node.kind === 'file') {
+      return node.relPath === focusPath ? { ...node } : null;
+    }
+
+    // Focused directory: keep only its direct children.
+    if (node.relPath === focusPath) {
+      return buildFocusedSubtree(node);
+    }
+
+    const next = nextOnPath.get(node.relPath);
+    if (!next) {
+      return null;
+    }
+
+    // Parent of focus: keep all direct children (siblings + focus node).
+    if (node.relPath === focusParentPath) {
+      const children: Array<DirNode | FileNode> = [];
+      for (const child of node.children) {
+        if (child.relPath === focusPath) {
+          const focusedChild = build(child);
+          if (focusedChild) children.push(focusedChild);
+          continue;
+        }
+        children.push(cloneShallow(child));
+      }
+      return { ...node, children };
+    }
+
+    // Ancestor chain above focus parent: keep only the path child.
+    const childOnPath = node.children.find(child => child.relPath === next) ?? null;
+    if (!childOnPath) {
+      return { ...node, children: [] };
+    }
+    const builtChild = build(childOnPath);
+    return { ...node, children: builtChild ? [builtChild] : [] };
+  };
+
+  const built = build(root);
+  if (!built || built.kind !== 'dir') {
+    return null;
+  }
+  return built;
 }
 
 /**
@@ -543,9 +588,9 @@ export function renderTree(
     filteredTree = focused;
   }
 
-  // Step 2: Apply depth stubbing
+  // Step 2: Depth stubbing is handled in renderTreeNode via `depthLimit`.
   const depthLimit = depth === undefined ? Infinity : depth;
-  let stubTree = applyDepthStub(filteredTree, filteredSignals, depthLimit);
+  const stubTree = filteredTree;
 
   // Step 3: Compute collapsed paths
   const collapsedPaths = collapse
